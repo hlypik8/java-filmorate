@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -23,7 +22,7 @@ class FilmControllerTest {
         testFilm.setName("Test Film");
         testFilm.setDescription("Test Description");
         testFilm.setReleaseDate(LocalDate.now());
-        testFilm.setDuration(Duration.ofMinutes(120));
+        testFilm.setDuration(120);
     }
 
     @Test
@@ -62,13 +61,13 @@ class FilmControllerTest {
         firstFilm.setName("First Film");
         firstFilm.setDescription("First Description");
         firstFilm.setReleaseDate(LocalDate.now());
-        firstFilm.setDuration(Duration.ofMinutes(90));
+        firstFilm.setDuration(90);
 
         Film secondFilm  = new Film();
         secondFilm .setName("Second Film");
         secondFilm .setDescription("Second Description");
         secondFilm .setReleaseDate(LocalDate.now());
-        secondFilm .setDuration(Duration.ofMinutes(120));
+        secondFilm .setDuration(120);
 
         Film first = filmController.post(firstFilm);
         Film second = filmController.post(secondFilm);

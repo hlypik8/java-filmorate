@@ -22,7 +22,7 @@ class FilmTest {
         film.setName("Valid Film");
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(Duration.ofMinutes(120));
+        film.setDuration(120);
     }
 
     @Test
@@ -44,7 +44,7 @@ class FilmTest {
 
     @Test
     void shouldFailWhenDurationIsNegative() {
-        film.setDuration(Duration.ofMinutes(-120));
+        film.setDuration(-120);
         assertEquals(1, validator.validate(film).size());
     }
 

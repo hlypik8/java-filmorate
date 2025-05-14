@@ -1,18 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.model.annotations.PositiveDuration;
 import ru.yandex.practicum.filmorate.model.annotations.ReleaseDateConstraint;
-import ru.yandex.practicum.filmorate.model.durationSerializerDeserializer.DurationToMinutesSerializer;
-import ru.yandex.practicum.filmorate.model.durationSerializerDeserializer.MinutesToDurationDeserializer;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 /**
@@ -36,8 +31,6 @@ public class Film {
     private LocalDate releaseDate;
 
     @NotNull(message = "Длительность не может быть пустой!")
-    @PositiveDuration(message = "Длительность фильма должна быть положительной!")
-    @JsonSerialize(using = DurationToMinutesSerializer.class) // Сериализация в минуты
-    @JsonDeserialize(using = MinutesToDurationDeserializer.class) // Десериализация из минут
-    private Duration duration;
+    @Positive(message = "Длительность должна быть положительной!")
+    private int duration;
 }
