@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -22,14 +24,18 @@ public class FilmController {
 
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
+        log.info("Добавление нового фильма: {}", film);
         film.setId(getNextId());
         films.put(film.getId(), film);
+        log.info("Фильм успешно добавлен! ID: {}", film.getId());
         return film;
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
+        log.info("Обновление фильма: {}", film.getId());
         if (!films.containsKey(film.getId())) {
+            log.error("Фильм с ID {} не найден", film.getId());
             throw new NotFoundException("Фильм не найден");
         }
         Film oldFilm = films.get(film.getId());
@@ -37,6 +43,7 @@ public class FilmController {
         oldFilm.setDescription(film.getDescription());
         oldFilm.setReleaseDate(film.getReleaseDate());
         oldFilm.setDuration(film.getDuration());
+        log.debug("Фильм ID {} успешно обновлен", film.getId());
         return oldFilm;
     }
 

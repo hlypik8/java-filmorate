@@ -63,11 +63,11 @@ class FilmControllerTest {
         firstFilm.setReleaseDate(LocalDate.now());
         firstFilm.setDuration(90);
 
-        Film secondFilm  = new Film();
-        secondFilm .setName("Second Film");
-        secondFilm .setDescription("Second Description");
-        secondFilm .setReleaseDate(LocalDate.now());
-        secondFilm .setDuration(120);
+        Film secondFilm = new Film();
+        secondFilm.setName("Second Film");
+        secondFilm.setDescription("Second Description");
+        secondFilm.setReleaseDate(LocalDate.now());
+        secondFilm.setDuration(120);
 
         Film first = filmController.post(firstFilm);
         Film second = filmController.post(secondFilm);
