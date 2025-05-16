@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,8 +25,8 @@ public class UserController {
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
-        log.info("Добавление нового пользователя: {}", user);
-        if (user.getName() == null || user.getName().isBlank()) {
+        log.info("Добавление нового пользователя {}", user);
+        if (StringUtils.isBlank(user.getName())) {
             user.setName(user.getLogin());
         }
         user.setId(getNextId());
@@ -37,7 +38,7 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         log.info("Обновление данных пользователя ID: {}", user.getId());
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (StringUtils.isBlank(user.getName())) {
             user.setName(user.getLogin());
         }
         if (!users.containsKey(user.getId())) {
@@ -49,7 +50,8 @@ public class UserController {
         oldUser.setLogin(user.getLogin());
         oldUser.setName(user.getName());
         oldUser.setBirthday(user.getBirthday());
-        log.debug("Фильм ID {} успешно обновлен", user.getId());
+        log.info("Данные пользователя ID {} успешно обновлены", user.getId());
+        log.debug("User = {}", user);
         return oldUser;
     }
 
