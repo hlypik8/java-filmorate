@@ -9,14 +9,22 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.model.annotations.ReleaseDateConstraint;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Film.
- */
 @Data
 @EqualsAndHashCode(of = {"id"})
 public class Film {
 
+    private final Set<Integer> likes = new HashSet<>();
+
+    public void addLike(int userId) {
+        likes.add(userId);
+    }
+
+    public void removeLike(int userId) {
+        likes.remove(userId);
+    }
 
     private int id;
 

@@ -67,6 +67,13 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.17.0</version> <!-- Проверьте актуальную версию на Maven Central -->
 		</dependency>
+
+		<dependency>
+			<groupId>org.zalando</groupId>
+			<artifactId>logbook-spring-boot-starter</artifactId>
+			<version>3.7.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
