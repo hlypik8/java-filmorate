@@ -40,7 +40,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         log.info("Обновление фильма: {}", film.getId());
         log.debug("film = {}", film);
-        if (!films.containsKey(film.getId())) {
+        if (!exists(film.getId())) {
             log.error("Фильм с ID {} не найден", film.getId());
             throw new NotFoundException("Фильм не найден");
         }
@@ -61,5 +61,9 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    private boolean exists(int id) {
+        return films.containsKey(id);
     }
 }

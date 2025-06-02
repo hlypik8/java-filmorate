@@ -6,6 +6,8 @@ import java.util.Collection;
 
 public interface UserStorage {
 
+    boolean isFriends(int userId, int friendId);
+
     Collection<User> usersList();
 
     User newUser(User user);

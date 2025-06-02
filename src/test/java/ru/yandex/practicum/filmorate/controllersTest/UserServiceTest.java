@@ -14,7 +14,7 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserControllerTest {
+class UserServiceTest {
     private UserController userController;
     private User testUser;
 

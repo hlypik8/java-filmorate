@@ -23,8 +23,12 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
-        filmExistenceCheck(filmId);
-        userExistenceCheck(userId);
+        if (!isFilmExists(filmId)) {
+            throw new NotFoundException("Фильм с id " + filmId + " не найден");
+        }
+        if (!isUserExists(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
 
         filmStorage.getFilmById(filmId).addLike(userId);
         log.info("Лайк фильму {} от пользователя {} добавлен", filmId, userId);
@@ -33,9 +37,12 @@ public class FilmService {
     public void deleteLike(int filmId, int userId) {
         log.info("Удаление лайка фильму {} от пользователя {}", filmId, userId);
 
-        filmExistenceCheck(filmId);
-        userExistenceCheck(userId);
-
+        if (!isFilmExists(filmId)) {
+            throw new NotFoundException("Фильм с id " + filmId + " не найден");
+        }
+        if (!isUserExists(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
         filmStorage.getFilmById(filmId).removeLike(userId);
         log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
     }
@@ -48,17 +55,11 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public void filmExistenceCheck(int filmId) {
-
-        if (filmStorage.getFilmById(filmId) == null) {
-            throw new NotFoundException("Фильм с id " + filmId + " не найден");
-        }
+    public boolean isFilmExists(int filmId) {
+        return filmStorage.getFilmById(filmId) != null;
     }
 
-    public void userExistenceCheck(int userId) {
-
-        if (userStorage.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
+    public boolean isUserExists(int userId) {
+        return userStorage.getUserById(userId) != null;
     }
 }

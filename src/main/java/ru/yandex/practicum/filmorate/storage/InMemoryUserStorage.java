@@ -16,6 +16,10 @@ public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
 
+    public boolean isFriends(int userId, int friendId) {
+        return users.get(userId).getFriends().contains(friendId);
+    }
+
     public User getUserById(int id) {
         return users.get(id);
     }

@@ -25,16 +25,16 @@ public class UserService {
         userExistenceCheck(userId);
         userExistenceCheck(friendId);
 
-        User user1 = userStorage.getUserById(userId);
-        User user2 = userStorage.getUserById(friendId);
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
 
-        if (user1.getFriends().contains(friendId)) {
+        if (userStorage.isFriends(userId, friendId)) {
             log.warn("Пользователь {} уже в друзьях у {}", friendId, userId);
             return;
         }
 
-        user1.addNewFriend(friendId);
-        user2.addNewFriend(userId);
+        user.addNewFriend(friendId);
+        friend.addNewFriend(userId);
 
         log.info("Пользователи {} и {} теперь друзья", userId, friendId);
     }
@@ -48,7 +48,7 @@ public class UserService {
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
 
-        if (!user.getFriends().contains(friendId)) {
+        if (!userStorage.isFriends(userId, friendId)) {
             log.warn("Пользователь {} не найден в друзьях у {}", friendId, userId);
             return;
         }
