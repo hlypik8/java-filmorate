@@ -22,8 +22,12 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         log.info("Добавление дружбы между {} и {}", userId, friendId);
 
-        userExistenceCheck(userId);
-        userExistenceCheck(friendId);
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        if (!userExists(friendId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
@@ -42,8 +46,12 @@ public class UserService {
     public void deleteFriend(int userId, int friendId) {
         log.info("Удаление дружбы между пользователями {} и {}", userId, friendId);
 
-        userExistenceCheck(userId);
-        userExistenceCheck(friendId);
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        if (!userExists(friendId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
@@ -63,7 +71,9 @@ public class UserService {
     public List<Map<String, Integer>> getUserFriends(int userId) {
         log.info("Получение списка друзей пользователя {}", userId);
 
-        userExistenceCheck(userId);
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         return userStorage.getUserById(userId).getFriends().stream()
                 .map(id -> Map.of("id", id))
@@ -74,8 +84,12 @@ public class UserService {
 
         log.info("Получение списка общих друзей пользователя {} и {}", userId, otherUserId);
 
-        userExistenceCheck(userId);
-        userExistenceCheck(otherUserId);
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        if (!userExists(otherUserId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
 
         Set<Integer> userFriends = userStorage.getUserById(userId).getFriends();
         userFriends.retainAll(userStorage.getUserById(otherUserId).getFriends());
@@ -85,11 +99,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    private void userExistenceCheck(int userId) {
-
-        if (userStorage.getUserById(userId) == null) {
-            log.info("Ошибка! Пользователь с ID: {} не найден", userId);
-            throw new NotFoundException("Пользователь не найден");
-        }
+    private boolean userExists(int userId) {
+        return userStorage.getUserById(userId) != null;
     }
 }

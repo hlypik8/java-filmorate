@@ -23,10 +23,10 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
-        if (!isFilmExists(filmId)) {
+        if (!filmExists(filmId)) {
             throw new NotFoundException("Фильм с id " + filmId + " не найден");
         }
-        if (!isUserExists(userId)) {
+        if (!userExists(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
 
@@ -37,10 +37,10 @@ public class FilmService {
     public void deleteLike(int filmId, int userId) {
         log.info("Удаление лайка фильму {} от пользователя {}", filmId, userId);
 
-        if (!isFilmExists(filmId)) {
+        if (!filmExists(filmId)) {
             throw new NotFoundException("Фильм с id " + filmId + " не найден");
         }
-        if (!isUserExists(userId)) {
+        if (!userExists(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
         filmStorage.getFilmById(filmId).removeLike(userId);
@@ -55,11 +55,11 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public boolean isFilmExists(int filmId) {
+    public boolean filmExists(int filmId) {
         return filmStorage.getFilmById(filmId) != null;
     }
 
-    public boolean isUserExists(int userId) {
+    public boolean userExists(int userId) {
         return userStorage.getUserById(userId) != null;
     }
 }
