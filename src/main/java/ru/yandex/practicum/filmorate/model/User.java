@@ -5,10 +5,22 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(of = {"email"})
 public class User {
+
+    private final Set<Integer> friends = new HashSet<>();
+
+    public void addNewFriend(int id) {
+        friends.add(id);
+    }
+
+    public void removeFriend(int friendId) {
+        friends.remove(friendId);
+    }
 
     private int id;
 

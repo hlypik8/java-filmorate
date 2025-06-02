@@ -1,66 +1,69 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@ConfigurationPropertiesScan
+@RequiredArgsConstructor
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserStorage userStorage;
+    private final UserService userService;
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<Map<String, Integer>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<Map<String, Integer>> getUserFriends(@PathVariable int id) {
+        return userService.getUserFriends(id);
+    }
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        return userStorage.usersList();
     }
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
-        log.info("Добавление нового пользователя {}", user);
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Пользователь успешно добавлен! ID: {}", user.getId());
-        return user;
+        return userStorage.newUser(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        log.info("Обновление данных пользователя ID: {}", user.getId());
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        if (!users.containsKey(user.getId())) {
-            log.error("Пользователь с ID {} не найден", user.getId());
-            throw new NotFoundException("Пользователь не найден!");
-        }
-        User oldUser = users.get(user.getId());
-        oldUser.setEmail(user.getEmail());
-        oldUser.setLogin(user.getLogin());
-        oldUser.setName(user.getName());
-        oldUser.setBirthday(user.getBirthday());
-        log.info("Данные пользователя ID {} успешно обновлены", user.getId());
-        log.debug("User = {}", user);
-        return oldUser;
+        return userStorage.updateUser(user);
     }
 
-    private int getNextId() {
-        int currentMaxId = users.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handle(NotFoundException e) {
+        return Map.of("error", "пользователь не найден",
+                "errorMessage", e.getMessage());
     }
 }
