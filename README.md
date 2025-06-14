@@ -43,18 +43,24 @@ FROM users;
 ```
 - Получение списка всех друзей GET(/users/{id}/friends)
 ```
-SELECT  u.id,
-        u.name
-FROM friends AS f
-INNER JOIN user AS u ON 
-        (f.friend_id = u.id AND f.user_id = {id}) OR -- Друзья, которых пользователь добавил
-        (f.user_id = i.id AND f.friend_id = {id})    -- Друзья, которые добавили пользователя
-WHERE f.accepted = true;
+SELECT u.id, u.name
+FROM user AS u
+WHERE u.id IN (
+    SELECT f.friend_id   -- Друзья, которых добавил пользователь
+    FROM friends AS f
+    WHERE f.user_id = {id} AND f.accepted = true
+    
+    UNION                
+    
+    SELECT f.user_id     -- Друзья, которые добавили пользователя
+    FROM friends AS f
+    WHERE f.friend_id = {id} AND f.accepted = true
+);
 ```
 - Получение списка друзей пользователя {id}, которые пересекаются с друзьями пользователя {otherId}
 GET(/users/{id}/friends/common/{otherId})
 ```
-SELECT u.*
+SELECT u.id, u.name
 FROM users AS u
 WHERE u.id IN {
         -- Друзья, где оба пользователя добавили этого человека
