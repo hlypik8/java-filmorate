@@ -16,16 +16,6 @@ import java.util.Set;
 @EqualsAndHashCode(of = {"id"})
 public class Film {
 
-    private final Set<Integer> likes = new HashSet<>();
-
-    public void addLike(int userId) {
-        likes.add(userId);
-    }
-
-    public void removeLike(int userId) {
-        likes.remove(userId);
-    }
-
     private int id;
 
     @NotBlank(message = "Название фильма не может быть пустым!")

@@ -1,12 +1,12 @@
-package ru.yandex.practicum.filmorate.service;
+/*package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
 
 import java.util.Comparator;
 import java.util.List;
@@ -63,3 +63,5 @@ public class FilmService {
         return userStorage.getUserById(userId) != null;
     }
 }
+
+ */

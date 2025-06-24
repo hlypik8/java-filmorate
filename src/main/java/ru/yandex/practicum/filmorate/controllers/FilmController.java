@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controllers;
+/*package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
 
 import java.util.Collection;
 import java.util.Map;
@@ -59,3 +59,5 @@ public class FilmController {
                 "errorMessage", e.getMessage());
     }
 }
+
+ */

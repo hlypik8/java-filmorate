@@ -12,16 +12,6 @@ import java.util.Set;
 @EqualsAndHashCode(of = {"email"})
 public class User {
 
-    private final Set<Integer> friends = new HashSet<>();
-
-    public void addNewFriend(int id) {
-        friends.add(id);
-    }
-
-    public void removeFriend(int friendId) {
-        friends.remove(friendId);
-    }
-
     private int id;
 
     @Email(message = "Введен неверный адрес электронной почты!")
