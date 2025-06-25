@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -31,4 +32,13 @@ public class Film {
     @NotNull(message = "Длительность не может быть пустой!")
     @Positive(message = "Длительность должна быть положительной!")
     private int duration;
+
+
+    @NotNull
+    @Valid
+    private Mpa mpa;
+
+    @NotNull
+    @Valid
+    private Set<Genre> genres = new HashSet<>();
 }

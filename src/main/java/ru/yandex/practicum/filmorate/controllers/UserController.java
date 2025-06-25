@@ -22,7 +22,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserStorage userStorage;
     private final UserService userService;
 
     /*
@@ -49,17 +48,17 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        return userStorage.usersList();
+        return userService.getUsersList();
     }
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
-        return userStorage.newUser(user);
+        return userService.newUser(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        return userStorage.updateUser(user);
+        return userService.updateUser(user);
     }
 
     @ExceptionHandler

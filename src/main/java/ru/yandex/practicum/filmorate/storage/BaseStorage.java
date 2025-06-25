@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.Map;
 
 @RequiredArgsConstructor
 public class BaseStorage<T> {
@@ -37,10 +36,10 @@ public class BaseStorage<T> {
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(query);
-                  for(int i = 0; i < params.length; i++){
-                      ps.setObject(i + 1, params[i]);
-                  }
-                  return ps;
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
+            }
+            return ps;
         });
 
         if (rowsUpdated == 0) {

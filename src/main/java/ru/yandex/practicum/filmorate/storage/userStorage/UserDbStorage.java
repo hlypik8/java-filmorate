@@ -21,44 +21,54 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
         this.userRowMapper = userRowMapper;
     }
 
-   /* public boolean isFriends(int userId, int friendId) {
+    /* public boolean isFriends(int userId, int friendId) {
+
+         String query = """
+                 SELECT EXISTS(
+                     SELECT 1
+                     FROM friends
+                     WHERE  ((user_id = ? AND friend_id = ?)
+                            OR (user_id = ? AND friend_id = ?))
+                       AND accepted = true
+                 );
+                 """;
+
+         Boolean result = jdbcTemplate.queryForObject(
+                 query, Boolean.class,
+                 userId, friendId,
+                 friendId, userId);
+
+         return Boolean.TRUE.equals(result);
+     }
+ */
+    @Override
+    public Collection<User> getUsersList() {
 
         String query = """
-                SELECT EXISTS( 
-                    SELECT 1
-                    FROM friends 
-                    WHERE  ((user_id = ? AND friend_id = ?) 
-                           OR (user_id = ? AND friend_id = ?))
-                      AND accepted = true
-                );
+                SELECT * 
+                FROM users 
+                ORDER BY id ASC;
                 """;
-
-        Boolean result = jdbcTemplate.queryForObject(
-                query, Boolean.class,
-                userId, friendId,
-                friendId, userId);
-
-        return Boolean.TRUE.equals(result);
-    }
-*/
-    @Override
-    public Collection<User> usersList() {
-
-        String query = "SELECT * FROM users ORDER BY id ASC;";
 
         return findMany(query, userRowMapper);
     }
 
     @Override
     public User newUser(User user) {
-        String query = "INSERT INTO users (email, login, name, birthday) VALUES (?,?,?,?);";
+
+        String query = """
+                INSERT INTO users (email, login, name, birthday)
+                VALUES (?,?,?,?);
+                """;
 
         int id = insert(query,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
                 java.sql.Date.valueOf(user.getBirthday()));
+
         user.setId(id);
+
         return user;
     }
 
@@ -67,7 +77,8 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
 
         String query = """
                 DELETE FROM users
-                WHERE id = ?""";
+                WHERE id = ?;
+                """;
 
         if (!delete(query, userId)) {
             throw new NotFoundException("Пользователь не найден");
@@ -75,9 +86,12 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) throws NotFoundException{
+    public User updateUser(User user) throws NotFoundException {
 
-        String query = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
+        String query = """
+                UPDATE users SET email = ?, login = ?, name = ?, birthday = ?
+                WHERE id = ?;
+                """;
 
         update(query,
                 user.getEmail(),
@@ -85,16 +99,21 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
                 user.getName(),
                 java.sql.Date.valueOf(user.getBirthday()),
                 user.getId());
+
         return user;
     }
 
     @Override
     public User getUserById(int userId) throws NotFoundException {
 
-        String query = "SELECT * FROM users WHERE id = ?";
+        String query = """
+                SELECT *
+                FROM users
+                WHERE id = ?;
+                """;
 
         User user = findOne(query, userRowMapper, userId);
-        if(user == null){
+        if (user == null) {
             throw new NotFoundException("Пользователь не найден");
         }
         return user;

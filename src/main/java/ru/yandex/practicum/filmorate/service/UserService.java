@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -19,12 +16,17 @@ public class UserService {
 
     private final UserStorage userStorage;
 
+    public Collection<User> getUsersList(){
+        return userStorage.getUsersList();
+    }
 
+    public User newUser(User user){
+        return userStorage.newUser(user);
+    }
 
-
-
-
-
+    public User updateUser(User user){
+        return userStorage.updateUser(user);
+    }
 
 /*
     public void addFriend(int userId, int friendId) {

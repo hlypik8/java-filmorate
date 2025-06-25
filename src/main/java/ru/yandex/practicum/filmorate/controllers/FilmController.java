@@ -1,4 +1,4 @@
-/*package ru.yandex.practicum.filmorate.controllers;
+package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,24 +18,24 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FilmController {
 
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @GetMapping
     public Collection<Film> findAll() {
-        return filmStorage.getFilmsList();
+        return filmService.getFilmsList();
     }
 
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
-        return filmStorage.newFilm(film);
+        return filmService.newFilm(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
-        return filmStorage.updateFilm(film);
+        return filmService.updateFilm(film);
     }
 
+    /*
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
@@ -51,7 +50,7 @@ public class FilmController {
     public Collection<Film> getPopular(@RequestParam(defaultValue = "10", name = "count") int count) {
         return filmService.getPopularFilms(count);
     }
-
+*/
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle(NotFoundException e) {
@@ -60,4 +59,4 @@ public class FilmController {
     }
 }
 
- */
+

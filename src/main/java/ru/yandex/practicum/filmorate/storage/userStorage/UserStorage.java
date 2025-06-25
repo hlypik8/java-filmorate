@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface UserStorage {
 
-    Collection<User> usersList();
+    Collection<User> getUsersList();
 
     User newUser(User user);
 
