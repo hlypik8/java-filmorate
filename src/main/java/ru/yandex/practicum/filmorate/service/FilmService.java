@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.storage.likesStorage.LikesDbStorage;
 import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,34 +25,34 @@ public class FilmService {
     private final GenreDbStorage genreDbStorage;
     private final LikesDbStorage likesDbStorage;
 
-    public Collection<Film> getFilmsList(){
+    public Collection<Film> getFilmsList() {
         return filmStorage.getFilmsList();
     }
 
-    public Film getFilmById(int filmId){
+    public Film getFilmById(int filmId) {
         return filmStorage.getFilmById(filmId);
     }
 
-    public Film newFilm(Film film){
+    public Film newFilm(Film film) {
         validateMpa(film.getMpa());
         validateGenre(film.getGenres());
 
         return filmStorage.newFilm(film);
     }
 
-    public Film updateFilm(Film film){
+    public Film updateFilm(Film film) {
         return filmStorage.updateFilm(film);
     }
 
-    private void validateMpa(Mpa mpa){
-        if(mpaDbStorage.getMpaById(mpa.getId()) == null){
+    private void validateMpa(Mpa mpa) {
+        if (mpaDbStorage.getMpaById(mpa.getId()) == null) {
             throw new MpaNotFoundException("Неверный рейтинг MPA");
         }
     }
 
-    private void validateGenre(Set<Genre> genres){
-        for (Genre genre : genres){
-            if(genreDbStorage.getGenreById(genre.getId()) == null){
+    private void validateGenre(Set<Genre> genres) {
+        for (Genre genre : genres) {
+            if (genreDbStorage.getGenreById(genre.getId()) == null) {
                 throw new GenreNotFoundException("Жанр не найден");
             }
         }
@@ -63,7 +62,7 @@ public class FilmService {
     public void addLike(int userId, int filmId) {
         log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
-        likesDbStorage.addLike(userId,filmId);
+        likesDbStorage.addLike(userId, filmId);
 
         log.info("Лайк фильму {} от пользователя {} добавлен", filmId, userId);
     }
@@ -82,7 +81,7 @@ public class FilmService {
         likesDbStorage.getPopularFilmsIds(count);
         List<Film> popularFilms = new ArrayList<>();
 
-        for (int filmId : likesDbStorage.getPopularFilmsIds(count)){
+        for (int filmId : likesDbStorage.getPopularFilmsIds(count)) {
             popularFilms.add(filmStorage.getFilmById(filmId));
         }
 

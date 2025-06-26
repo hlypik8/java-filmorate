@@ -20,18 +20,18 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public Collection<Mpa> findAll(){
+    public Collection<Mpa> findAll() {
         return mpaService.getMpaList();
     }
 
     @GetMapping("/{id}")
-    public Mpa findOne(@PathVariable int id){
+    public Mpa findOne(@PathVariable int id) {
         return mpaService.getMpaById(id);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handle(MpaNotFoundException e){
+    public Map<String, String> handle(MpaNotFoundException e) {
         return Map.of("error", "рейтинг mpa не найден",
                 "errorMessage", e.getMessage());
     }

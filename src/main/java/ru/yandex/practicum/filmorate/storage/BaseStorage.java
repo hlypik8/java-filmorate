@@ -59,6 +59,7 @@ public class BaseStorage<T> {
         }, generatedKeyHolder);
 
         Integer id = generatedKeyHolder.getKeyAs(Integer.class);
+
         if (id != null) {
             return id;
         } else {

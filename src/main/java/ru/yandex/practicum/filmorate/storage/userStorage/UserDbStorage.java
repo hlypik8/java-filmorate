@@ -21,32 +21,12 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
         this.userRowMapper = userRowMapper;
     }
 
-    /* public boolean isFriends(int userId, int friendId) {
-
-         String query = """
-                 SELECT EXISTS(
-                     SELECT 1
-                     FROM friends
-                     WHERE  ((user_id = ? AND friend_id = ?)
-                            OR (user_id = ? AND friend_id = ?))
-                       AND accepted = true
-                 );
-                 """;
-
-         Boolean result = jdbcTemplate.queryForObject(
-                 query, Boolean.class,
-                 userId, friendId,
-                 friendId, userId);
-
-         return Boolean.TRUE.equals(result);
-     }
- */
     @Override
     public Collection<User> getUsersList() {
 
         String query = """
-                SELECT * 
-                FROM users 
+                SELECT *
+                FROM users
                 ORDER BY id ASC;
                 """;
 

@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.annotation.Id;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -27,7 +26,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film findOne(@PathVariable int id){
+    public Film findOne(@PathVariable int id) {
         return filmService.getFilmById(id);
     }
 

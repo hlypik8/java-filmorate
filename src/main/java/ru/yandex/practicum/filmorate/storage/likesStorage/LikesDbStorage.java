@@ -15,14 +15,17 @@ public class LikesDbStorage extends BaseStorage<Integer> {
     }
 
     public void addLike(int userId, int filmId) {
+
         String query = """
                 INSERT INTO likes (user_id, film_id)
                 VALUES (?, ?);
                 """;
+
         insert(query, userId, filmId);
     }
 
     public void removeLike(int userId, int filmId) {
+
         String query = """
                 DELETE FROM likes
                 WHERE user_id = ?
@@ -32,7 +35,7 @@ public class LikesDbStorage extends BaseStorage<Integer> {
         delete(query, userId, filmId);
     }
 
-    public Collection<Integer> getLikesByFilmId(int filmId){
+    public Collection<Integer> getLikesByFilmId(int filmId) {
 
         String query = """
                 SELECT user_id
@@ -40,10 +43,11 @@ public class LikesDbStorage extends BaseStorage<Integer> {
                 WHERE film_id = ?;
                 """;
 
-        return findMany(query,(resultSet,rowNum)->resultSet.getInt("user_id"), filmId);
+        return findMany(query, (resultSet, rowNum) -> resultSet.getInt("user_id"), filmId);
     }
 
-    public Collection<Integer> getPopularFilmsIds(int count){
+    public Collection<Integer> getPopularFilmsIds(int count) {
+
         String query = """
                 SELECT film_id,
                        COUNT(*) AS likes_count
@@ -53,6 +57,6 @@ public class LikesDbStorage extends BaseStorage<Integer> {
                 LIMIT ?;
                 """;
 
-        return findMany(query, (resultSet,rowNum)->resultSet.getInt("film_id"), count);
+        return findMany(query, (resultSet, rowNum) -> resultSet.getInt("film_id"), count);
     }
 }
