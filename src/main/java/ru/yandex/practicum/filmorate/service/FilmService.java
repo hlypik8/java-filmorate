@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,17 +31,13 @@ public class FilmService {
         return filmStorage.getFilmsList();
     }
 
+    public Film getFilmById(int filmId){
+        return filmStorage.getFilmById(filmId);
+    }
+
     public Film newFilm(Film film){
         validateMpa(film.getMpa());
         validateGenre(film.getGenres());
-
-        Mpa mpa = mpaDbStorage.getMpaById(film.getMpa().getId());
-        Set<Genre> realGenres = film.getGenres().stream()
-                .map(genre -> genreDbStorage.getGenreById(genre.getId()))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        film.setGenres(realGenres);
-        film.setMpa(mpa);
 
         return filmStorage.newFilm(film);
     }

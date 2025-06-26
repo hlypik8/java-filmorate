@@ -19,6 +19,7 @@ public class GenreDbStorage extends BaseStorage<Genre> {
     }
 
     public Collection<Genre> getGenreList() {
+
         String query = """
                 SELECT *
                 FROM genres;
@@ -28,6 +29,7 @@ public class GenreDbStorage extends BaseStorage<Genre> {
     }
 
     public Genre getGenreById(int genreId) {
+
         String query = """
                 SELECT *
                 FROM genres
@@ -35,6 +37,19 @@ public class GenreDbStorage extends BaseStorage<Genre> {
                 """;
 
         return findOne(query, genreRowMapper, genreId);
+    }
+
+    public Collection<Genre> getGenresByFilmId(int filmId) {
+
+        String query = """
+                SELECT g.id, g.name
+                FROM films_genres fg
+                JOIN genres g ON fg.genre_id = g.id
+                WHERE fg.film_id = ?
+                ORDER BY fg.id DESC;
+                """;
+
+        return findMany(query, genreRowMapper, filmId);
     }
 
 }

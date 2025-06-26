@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j

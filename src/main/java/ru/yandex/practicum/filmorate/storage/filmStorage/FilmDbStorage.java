@@ -62,28 +62,36 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
         film.setId(id);
 
-       // if(film.getGenres() != null && !film.getGenres().isEmpty()){
-       //     saveGenres(film);
-       // }
+        saveGenres(film);
 
         return film;
     }
 
     private void saveGenres(Film film){
-        /*String deleteQuery = """
-                DELETE FROM films_genres
-                WHERE film_id = ?;
-                """;
-        update(deleteQuery, film.getId());
-*/
-        String insertQuery = """
+        String query = """
                 INSERT INTO films_genres (film_id, genre_id)
                 VALUES (?,?);
                 """;
-        for (Genre genre : film.getGenres()){
-            update(insertQuery, film.getId(), genre.getId());
+        for (Genre genre : film.getGenres()) {
+            insert(query, film.getId(), genre.getId());
         }
     }
+
+//    private void saveGenres(Film film){
+//        String deleteQuery = """
+//                DELETE FROM films_genres
+//                WHERE film_id = ?;
+//                """;
+//        update(deleteQuery, film.getId());
+//
+//        String insertQuery = """
+//                INSERT INTO films_genres (film_id, genre_id)
+//                VALUES (?,?);
+//                """;
+//        for (Genre genre : film.getGenres()){
+//            update(insertQuery, film.getId(), genre.getId());
+//        }
+//    }
 
     public void removeFilm(int filmId) {
 
@@ -112,9 +120,9 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId());
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            saveGenres(film);
-        }
+//        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+//            saveGenres(film);
+//        }
 
         return film;
     }

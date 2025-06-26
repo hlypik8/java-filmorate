@@ -10,8 +10,7 @@ import lombok.EqualsAndHashCode;
 import ru.yandex.practicum.filmorate.model.annotations.ReleaseDateConstraint;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @EqualsAndHashCode(of = {"id"})
@@ -40,5 +39,5 @@ public class Film {
 
     @NotNull
     @Valid
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 }
