@@ -10,12 +10,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genreStorage.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.likesStorage.LikesDbStorage;
 import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,6 +24,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
+    private final LikesDbStorage likesDbStorage;
 
     public Collection<Film> getFilmsList(){
         return filmStorage.getFilmsList();
@@ -61,48 +60,34 @@ public class FilmService {
     }
 
 
-//    public void addLike(int filmId, int userId) {
-//        log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
-//
-//        if (!filmExists(filmId)) {
-//            throw new NotFoundException("Фильм с id " + filmId + " не найден");
-//        }
-//        if (!userExists(userId)) {
-//            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-//        }
-//
-//        filmStorage.getFilmById(filmId).addLike(userId);
-//        log.info("Лайк фильму {} от пользователя {} добавлен", filmId, userId);
-//    }
+    public void addLike(int userId, int filmId) {
+        log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
-//    public void deleteLike(int filmId, int userId) {
-//        log.info("Удаление лайка фильму {} от пользователя {}", filmId, userId);
-//
-//        if (!filmExists(filmId)) {
-//            throw new NotFoundException("Фильм с id " + filmId + " не найден");
-//        }
-//        if (!userExists(userId)) {
-//            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-//        }
-//        filmStorage.getFilmById(filmId).removeLike(userId);
-//        log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
-//    }
+        likesDbStorage.addLike(userId,filmId);
 
-//    public List<Film> getPopularFilms(int count) {
-//        log.info("Запрос {} популярных фильмов", count);
-//        return filmStorage.getFilmsList().stream()
-//                .sorted(Comparator.comparing((Film film) -> film.getLikes().size()).reversed())
-//                .limit(count)
-//                .collect(Collectors.toList());
-//    }
+        log.info("Лайк фильму {} от пользователя {} добавлен", filmId, userId);
+    }
 
-//    public boolean filmExists(int filmId) {
-//        return filmStorage.getFilmById(filmId) != null;
-//    }
+    public void deleteLike(int userId, int filmId) {
+        log.info("Удаление лайка фильму {} от пользователя {}", filmId, userId);
 
-//    public boolean userExists(int userId) {
-//        return userStorage.getUserById(userId) != null;
-//    }
+        likesDbStorage.removeLike(userId, filmId);
+
+        log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
+    }
+
+    public List<Film> getPopularFilms(int count) {
+        log.info("Запрос {} популярных фильмов", count);
+
+        likesDbStorage.getPopularFilmsIds(count);
+        List<Film> popularFilms = new ArrayList<>();
+
+        for (int filmId : likesDbStorage.getPopularFilmsIds(count)){
+            popularFilms.add(filmStorage.getFilmById(filmId));
+        }
+
+        return popularFilms;
+    }
 }
 
 

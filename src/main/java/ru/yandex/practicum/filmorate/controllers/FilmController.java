@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.annotation.Id;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -40,22 +41,22 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
-    /*
+
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
-        filmService.addLike(id, userId);
+        filmService.addLike(userId, id);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
-        filmService.deleteLike(id, userId);
+        filmService.deleteLike(userId, id);
     }
 
     @GetMapping("/popular")
     public Collection<Film> getPopular(@RequestParam(defaultValue = "10", name = "count") int count) {
         return filmService.getPopularFilms(count);
     }
-*/
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle(NotFoundException e) {

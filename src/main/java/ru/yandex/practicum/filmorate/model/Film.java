@@ -40,4 +40,6 @@ public class Film {
     @NotNull
     @Valid
     private Set<Genre> genres = new LinkedHashSet<>();
+
+    private Set<Integer> likes = new HashSet<>();
 }

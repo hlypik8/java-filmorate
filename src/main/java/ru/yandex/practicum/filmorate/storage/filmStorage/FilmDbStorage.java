@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.filmStorage;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
 
 import java.util.Collection;
 
-@Component
 @Repository
 public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
@@ -51,7 +49,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
         String query = """
                 INSERT INTO films (name, description, release_date, duration, mpa_rating_id)
-                VALUES (?,?,?,?,?)
+                VALUES (?,?,?,?,?);
                 """;
         int id = insert(query,
                 film.getName(),
@@ -67,7 +65,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
-    private void saveGenres(Film film){
+    private void saveGenres(Film film) {
         String query = """
                 INSERT INTO films_genres (film_id, genre_id)
                 VALUES (?,?);
@@ -77,21 +75,15 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         }
     }
 
-//    private void saveGenres(Film film){
-//        String deleteQuery = """
-//                DELETE FROM films_genres
-//                WHERE film_id = ?;
-//                """;
-//        update(deleteQuery, film.getId());
-//
-//        String insertQuery = """
-//                INSERT INTO films_genres (film_id, genre_id)
-//                VALUES (?,?);
-//                """;
-//        for (Genre genre : film.getGenres()){
-//            update(insertQuery, film.getId(), genre.getId());
-//        }
-//    }
+    private void updateGenres(Film film) {
+        String query = """
+                DELETE FROM films_genres
+                WHERE film_id = ?;
+                """;
+        update(query, film.getId());
+
+        saveGenres(film);
+    }
 
     public void removeFilm(int filmId) {
 
@@ -105,7 +97,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         }
     }
 
-    public Film updateFilm(Film film){
+    public Film updateFilm(Film film) {
 
         String query = """
                 UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?
@@ -120,11 +112,23 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId());
 
-//        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-//            saveGenres(film);
-//        }
+        updateGenres(film);
 
         return film;
+    }
+
+    public Collection<Film> getPopular(int count) {
+        String query = """
+                SELECT f.id,
+                       f.name,
+                       COUNT(l.user_id) AS rating
+                FROM films AS f
+                LEFT JOIN likes AS l ON f.id = l.film_id
+                GROUP BY f.id
+                ORDER BY rating DESC
+                LIMIT ?;
+                """;
+        return findMany(query,filmRowMapper,count);
     }
 
 }
