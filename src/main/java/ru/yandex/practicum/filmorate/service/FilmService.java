@@ -26,21 +26,34 @@ public class FilmService {
     private final LikesDbStorage likesDbStorage;
 
     public Collection<Film> getFilmsList() {
+        log.info("Запрос списка всех фильмов");
         return filmStorage.getFilmsList();
     }
 
     public Film getFilmById(int filmId) {
+        log.info("Получение фильма с id {}", filmId);
         return filmStorage.getFilmById(filmId);
     }
 
     public Film newFilm(Film film) {
+        log.info("Добавление нового фильма");
+
         validateMpa(film.getMpa());
         validateGenre(film.getGenres());
 
+        log.debug("Валидация mpa и жанров пройдена");
+        log.info("Новый фильм успешно добавлен {}", film);
         return filmStorage.newFilm(film);
     }
 
     public Film updateFilm(Film film) {
+        log.info("Обновление фильма {}", film.getId());
+
+        validateMpa(film.getMpa());
+        validateGenre(film.getGenres());
+        log.debug("Валидация mpa и жанров пройдена");
+
+        log.info("Фильм успешно обновлен {}", film);
         return filmStorage.updateFilm(film);
     }
 

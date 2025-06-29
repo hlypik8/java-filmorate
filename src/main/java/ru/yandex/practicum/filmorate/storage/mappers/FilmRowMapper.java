@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 @Component
@@ -39,8 +38,6 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setMpa(mpaDbStorage.getMpaById(mpaId));
 
         film.setGenres(new LinkedHashSet<>(genreDbStorage.getGenresByFilmId(film.getId())));
-
-        film.setLikes(new HashSet<>(likesDbStorage.getLikesByFilmId(film.getId())));
 
         return film;
     }

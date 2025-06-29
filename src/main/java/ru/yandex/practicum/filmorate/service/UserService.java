@@ -20,14 +20,17 @@ public class UserService {
     private final FriendsDbStorage friendsStorage;
 
     public Collection<User> getUsersList() {
+        log.info("Запрос списка всех пользователей");
         return userStorage.getUsersList();
     }
 
     public User newUser(User user) {
+        log.info("Создание нового пользователя {}", user);
         return userStorage.newUser(user);
     }
 
     public User updateUser(User user) {
+        log.info("Обновление данных пользователя с id {}", user.getId());
         return userStorage.updateUser(user);
     }
 
@@ -57,7 +60,9 @@ public class UserService {
     }
 
     public Collection<User> getUserFriends(int userId) {
+        log.info("Запрос на получение друзей пользователя с id {}", userId);
         if (!userExists(userId)) {
+            log.warn("Пользователь c id {} не найден", userId);
             throw new NotFoundException("Пользователь не найден");
         }
         return friendsStorage.getFriendIds(userId).stream()
@@ -66,8 +71,15 @@ public class UserService {
     }
 
     public Collection<User> getCommonFriends(int userId, int otherId) {
+        log.info("Запрос на получение общих друзей пользователя {} и {}", userId, otherId);
+
         if (!userExists(userId) || !userExists(otherId)) {
-            throw new NotFoundException("Пользователь не найден");
+            log.warn("Пользователь c id {} не найден", userId);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+        if (!userExists(otherId)) {
+            log.warn("Пользователь c id {} не найден", otherId);
+            throw new NotFoundException("Пользователь с id " + otherId + " не найден");
         }
         return friendsStorage.getCommonFriendIds(userId, otherId).stream()
                 .map(userStorage::getUserById)

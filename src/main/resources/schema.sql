@@ -45,13 +45,13 @@ CREATE TABLE IF NOT EXISTS mpa_ratings (
   description varchar
 );
 
-ALTER TABLE friends ADD FOREIGN KEY (user_id) REFERENCES users (id);
-ALTER TABLE friends ADD FOREIGN KEY (friend_id) REFERENCES users (id);
+ALTER TABLE friends ADD FOREIGN KEY (user_id) REFERENCES users (id) ;
+ALTER TABLE friends ADD FOREIGN KEY (friend_id) REFERENCES users (id) ;
 
-ALTER TABLE likes ADD FOREIGN KEY (user_id) REFERENCES users (id);
-ALTER TABLE likes ADD FOREIGN KEY (film_id) REFERENCES films (id);
+ALTER TABLE likes ADD FOREIGN KEY (user_id) REFERENCES users (id) ;
+ALTER TABLE likes ADD FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE;
 
-ALTER TABLE films_genres ADD FOREIGN KEY (film_id) REFERENCES films (id);
+ALTER TABLE films_genres ADD FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE;
 ALTER TABLE films_genres ADD FOREIGN KEY (genre_id) REFERENCES genres (id);
 
 ALTER TABLE films ADD FOREIGN KEY (mpa_rating_id) REFERENCES mpa_ratings (id);

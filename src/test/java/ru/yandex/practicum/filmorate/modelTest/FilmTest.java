@@ -5,6 +5,7 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FilmTest {
     private Validator validator;
-    private Film film = new Film();
+    private Film film;
 
     @BeforeEach
     void setUp() {
@@ -22,6 +23,11 @@ class FilmTest {
         film.setDescription("Test Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
+
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        mpa.setName("G");
+        film.setMpa(mpa);
     }
 
     @Test
