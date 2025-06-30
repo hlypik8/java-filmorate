@@ -23,11 +23,19 @@ FROM films;
 - Получение count популярных фильмов
 GET(/films/popular?count={count})
 ```
-SELECT film_id,
-       COUNT(*) AS likes_count
-FROM likes
-GROUP BY film_id
-ORDER BY likes_count DESC, film_id
+SELECT f.*,
+       COUNT(l.user_id) AS likes_count
+FROM films AS f
+LEFT JOIN likes AS l
+ON l.film_id = f.id
+GROUP BY
+f.id,
+f.name,
+f.description,
+f.release_date,
+f.duration,
+f.mpa_rating_id
+ORDER BY likes_count DESC
 LIMIT {count};
 ```
 
@@ -49,8 +57,12 @@ WHERE user_id = {id};
 - Получение списка друзей пользователя {id}, которые пересекаются с друзьями пользователя {otherId}
 GET(/users/{id}/friends/common/{otherId})
 ```
-SELECT f1.friend_id
-FROM friends f1
-JOIN friends f2 ON f1.friend_id = f2.friend_id
-WHERE f1.user_id = {id} AND f2.user_id = {otherId} AND f1.accepted = true AND f2.accepted = true;
+SELECT u.*
+FROM users AS u
+JOIN friends AS f1 ON u.id = f1.friend_id
+JOIN friends AS f2 ON u.id = f2.friend_id
+WHERE f1.user_id = ?
+      AND f2.user_id = ?
+      AND f1.accepted = TRUE
+      AND f2.accepted = TRUE;
 ```

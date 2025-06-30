@@ -122,4 +122,25 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
         return film;
     }
+
+    public Collection<Film> getPopularFilms(int count) {
+        String query = """
+                SELECT f.*,
+                       COUNT(l.user_id) AS likes_count
+                FROM films AS f
+                LEFT JOIN likes AS l
+                ON l.film_id = f.id
+                GROUP BY
+                f.id,
+                f.name,
+                f.description,
+                f.release_date,
+                f.duration,
+                f.mpa_rating_id
+                ORDER BY likes_count DESC
+                LIMIT ?;
+                """;
+
+        return findMany(query, filmRowMapper, count);
+    }
 }

@@ -81,9 +81,7 @@ public class UserService {
             log.warn("Пользователь c id {} не найден", otherId);
             throw new NotFoundException("Пользователь с id " + otherId + " не найден");
         }
-        return friendsStorage.getCommonFriendIds(userId, otherId).stream()
-                .map(userStorage::getUserById)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     private boolean userExists(int userId) {

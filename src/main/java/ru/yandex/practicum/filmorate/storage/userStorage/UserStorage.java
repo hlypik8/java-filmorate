@@ -15,4 +15,6 @@ public interface UserStorage {
     User updateUser(User user);
 
     User getUserById(int userId);
+
+    Collection<User> getCommonFriends(int userId, int otherId);
 }

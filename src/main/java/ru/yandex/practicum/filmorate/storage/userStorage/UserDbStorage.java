@@ -98,4 +98,21 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
         }
         return user;
     }
+
+    public Collection<User> getCommonFriends(int userId, int otherId) {
+
+        String query = """
+        SELECT u.*
+        FROM users AS u
+        JOIN friends AS f1 ON u.id = f1.friend_id
+        JOIN friends AS f2 ON u.id = f2.friend_id
+        WHERE f1.user_id = ?
+              AND f2.user_id = ?
+              AND f1.accepted = TRUE
+              AND f2.accepted = TRUE;
+        """;
+
+        return findMany(query, userRowMapper, userId, otherId);
+    }
+
 }

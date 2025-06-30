@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.likesStorage.LikesDbStorage;
 import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,7 +43,7 @@ public class FilmService {
         validateGenre(film.getGenres());
 
         log.debug("Валидация mpa и жанров пройдена");
-        log.info("Новый фильм успешно добавлен {}", film);
+        log.info("Новый фильм успешно добавлен {}", film.getName());
         return filmStorage.newFilm(film);
     }
 
@@ -64,9 +65,13 @@ public class FilmService {
     }
 
     private void validateGenre(Set<Genre> genres) {
+        Set<Integer> allGenreIds = genreDbStorage.getGenreList().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
         for (Genre genre : genres) {
-            if (genreDbStorage.getGenreById(genre.getId()) == null) {
-                throw new GenreNotFoundException("Жанр не найден");
+            if (!allGenreIds.contains(genre.getId())) {
+                throw new GenreNotFoundException("Жанр не найден: " + genre.getId());
             }
         }
     }
@@ -91,14 +96,7 @@ public class FilmService {
     public List<Film> getPopularFilms(int count) {
         log.info("Запрос {} популярных фильмов", count);
 
-        likesDbStorage.getPopularFilmsIds(count);
-        List<Film> popularFilms = new ArrayList<>();
-
-        for (int filmId : likesDbStorage.getPopularFilmsIds(count)) {
-            popularFilms.add(filmStorage.getFilmById(filmId));
-        }
-
-        return popularFilms;
+        return filmStorage.getPopularFilms(count).stream().toList();
     }
 }
 

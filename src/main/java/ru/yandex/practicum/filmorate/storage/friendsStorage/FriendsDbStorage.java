@@ -71,16 +71,4 @@ public class FriendsDbStorage extends BaseStorage<Integer> {
 
         return findMany(query, (rs, rowNum) -> rs.getInt("friend_id"), userId);
     }
-
-    public Collection<Integer> getCommonFriendIds(int userId, int otherId) {
-
-        String query = """
-                SELECT f1.friend_id
-                FROM friends f1
-                JOIN friends f2 ON f1.friend_id = f2.friend_id
-                WHERE f1.user_id = ? AND f2.user_id = ? AND f1.accepted = true AND f2.accepted = true;
-                """;
-
-        return findMany(query, (rs, rowNum) -> rs.getInt("friend_id"), userId, otherId);
-    }
 }

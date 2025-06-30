@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.friendsStorage.FriendsDbStorage;
@@ -76,12 +77,16 @@ public class FilmDbStorageTests {
         created.setGenres(Set.of(genreDbStorage.getGenreById(2)));
 
         Film updated = filmDbStorage.updateFilm(created);
-        assertEquals("Updated name", updated.getName());
-        assertEquals("Updated description", updated.getDescription());
-        assertEquals(90, updated.getDuration());
-        assertEquals(LocalDate.of(2010, 10, 10), updated.getReleaseDate());
-        assertEquals(2, updated.getMpa().getId());
-        assertTrue(updated.getGenres().contains(genreDbStorage.getGenreById(2)));
+
+        assertAll("Проверка полей обновлённого фильма",
+                () -> assertEquals("Updated name", updated.getName(), "Имя не обновилось"),
+                () -> assertEquals("Updated description", updated.getDescription(), "Описание не обновилось"),
+                () -> assertEquals(90, updated.getDuration(), "Длительность не обновилась"),
+                () -> assertEquals(LocalDate.of(2010, 10, 10), updated.getReleaseDate(), "Дата релиза не обновилась"),
+                () -> assertEquals(2, updated.getMpa().getId(), "MPA-рейтинг не обновился"),
+                () -> assertTrue(updated.getGenres().contains(genreDbStorage.getGenreById(2)),
+                        "Жанры не обновились")
+        );
     }
 
     @Test
@@ -106,6 +111,6 @@ public class FilmDbStorageTests {
 
         filmDbStorage.removeFilm(created.getId());
 
-        assertThrows(RuntimeException.class, () -> filmDbStorage.getFilmById(created.getId()));
+        assertThrows(NotFoundException.class, () -> filmDbStorage.getFilmById(created.getId()));
     }
 }
