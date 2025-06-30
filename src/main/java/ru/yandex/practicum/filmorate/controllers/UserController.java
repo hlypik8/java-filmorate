@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -22,8 +20,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserStorage userStorage;
     private final UserService userService;
+
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId) {
@@ -36,28 +34,29 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<Map<String, Integer>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+    public Collection<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<Map<String, Integer>> getUserFriends(@PathVariable int id) {
+    public Collection<User> getUserFriends(@PathVariable int id) {
         return userService.getUserFriends(id);
     }
 
+
     @GetMapping
     public Collection<User> findAll() {
-        return userStorage.usersList();
+        return userService.getUsersList();
     }
 
     @PostMapping
     public User post(@Valid @RequestBody User user) {
-        return userStorage.newUser(user);
+        return userService.newUser(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        return userStorage.updateUser(user);
+        return userService.updateUser(user);
     }
 
     @ExceptionHandler
