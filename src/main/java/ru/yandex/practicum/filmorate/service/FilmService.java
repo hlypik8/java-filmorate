@@ -99,7 +99,7 @@ public class FilmService {
         return filmStorage.getPopularFilms(count).stream().toList();
     }
 
-    public Collection<Film> getCommonFilms(int userId, int friendId){
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
         log.info("Запрос общих фильмов пользователя {} и {}", userId, friendId);
 
         return filmStorage.getCommonFilms(userId, friendId);

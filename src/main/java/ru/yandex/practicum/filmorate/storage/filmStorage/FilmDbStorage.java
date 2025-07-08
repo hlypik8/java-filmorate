@@ -144,7 +144,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return findMany(query, filmRowMapper, count);
     }
 
-    public Collection<Film> getCommonFilms(int userId, int friendId){
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
 
         String query = """
                 SELECT
@@ -169,5 +169,4 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
         return findMany(query, filmRowMapper, userId, friendId);
     }
-
 }
