@@ -93,10 +93,10 @@ public class FilmService {
         log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         log.info("Запрос {} популярных фильмов", count);
 
-        return filmStorage.getPopularFilms(count).stream().toList();
+        return filmStorage.getPopularFilms(count, genreId, year).stream().toList();
     }
 }
 
