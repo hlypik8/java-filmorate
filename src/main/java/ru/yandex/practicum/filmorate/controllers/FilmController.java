@@ -56,6 +56,12 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
+                                           @RequestParam(name = "friendId") int friendId){
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handle(NotFoundException e) {
