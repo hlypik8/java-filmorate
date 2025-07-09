@@ -35,7 +35,6 @@
             delete(query, userId, filmId);
         }
 
-        // Получаем все фильмы, которые лайкнул пользователь (возвращаем список film_id)
         public List<Integer> getLikesByUser(int userId) {
             String query = """
                 SELECT film_id
@@ -45,7 +44,6 @@
             return jdbcTemplate.queryForList(query, Integer.class, userId);
         }
 
-        // Получаем всех пользователей, которые лайкнули конкретный фильм
         public List<Integer> getUsersWhoLikedFilm(int filmId) {
             String query = """
                 SELECT user_id

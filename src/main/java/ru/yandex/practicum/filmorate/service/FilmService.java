@@ -76,7 +76,6 @@ public class FilmService {
         }
     }
 
-
     public void addLike(int userId, int filmId) {
         log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
