@@ -118,7 +118,7 @@ public class FilmService {
         return recommendedFilms;
     }
 
-    private Set<Integer> getLikedFilmsByUser(int userId) {
+    private Set<Integer> getLikedFilmByUser(int userId) {
         return new HashSet<>(likesDbStorage.getLikesByUser(userId));
     }
 
