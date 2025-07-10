@@ -31,6 +31,18 @@ public class FilmService {
         return filmStorage.getFilmsList();
     }
 
+    public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
+        log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
+        if (sortBy.equals("likes")) {
+            return filmStorage.getDirectorsFilmsByLikes(directorId);
+        }
+        if (sortBy.equals("year")) {
+            return filmStorage.getDirectorsFilmsByYear(directorId);
+        }
+
+        return null;
+    }
+
     public Film getFilmById(int filmId) {
         log.info("Получение фильма с id {}", filmId);
         return filmStorage.getFilmById(filmId);
