@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.filmStorage;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
@@ -46,6 +47,42 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
+    public Collection<Film> getDirectorsFilmsByLikes(int directorId) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY film_id
+            ) l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            ORDER BY COALESCE(l.like_count, 0) DESC;
+            """;
+
+        return findMany(query, filmRowMapper, directorId);
+    }
+
+    public Collection<Film> getDirectorsFilmsByYear(int directorId) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY film_id
+            ) l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            ORDER BY f.release_date ASC;
+            """;
+
+        return findMany(query, filmRowMapper, directorId);
+    }
+
     public Film newFilm(Film film) {
 
         String query = """
@@ -63,6 +100,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         film.setId(id);
 
         saveGenres(film);
+        saveDirectors(film);
 
         return film;
     }
@@ -79,6 +117,18 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         }
     }
 
+    private void saveDirectors(Film film) {
+
+        String query = """
+                INSERT INTO films_directors (film_id, director_id)
+                VALUES (?, ?)
+                """;
+
+        for (Director director : film.getDirectors()) {
+            jdbcTemplate.update(query, film.getId(), director.getId());
+        }
+    }
+
     private void updateGenres(Film film) {
 
         String query = """
@@ -89,6 +139,18 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         update(query, film.getId());
 
         saveGenres(film);
+    }
+
+    private void updateDirectors(Film film) {
+
+        String query = """
+                DELETE FROM films_directors
+                WHERE film_id = ?;
+                """;
+
+        jdbcTemplate.update(query, film.getId());
+
+        saveDirectors(film);
     }
 
     public void removeFilm(int filmId) {
@@ -119,6 +181,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getId());
 
         updateGenres(film);
+        updateDirectors(film);
 
         return film;
     }
@@ -126,7 +189,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> getPopularFilms(int count) {
         String query = """
                 SELECT f.*,
-                       COUNT(l.user_id) AS likes_count
+                COUNT(l.user_id) AS likes_count
                 FROM films AS f
                 LEFT JOIN likes AS l
                 ON l.film_id = f.id

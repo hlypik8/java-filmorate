@@ -17,4 +17,9 @@ public interface FilmStorage {
     Film updateFilm(Film film);
 
     Collection<Film> getPopularFilms(int count);
+
+    Collection<Film> getDirectorsFilmsByLikes(int filmId);
+
+    Collection<Film> getDirectorsFilmsByYear(int filmId);
+
 }

@@ -30,6 +30,11 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getDirectorFilmsSorted(@PathVariable int directorId, @RequestParam String sortBy) {
+        return filmService.getFilmByDirector(directorId, sortBy);
+    }
+
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         return filmService.newFilm(film);
@@ -39,7 +44,6 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
-
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
