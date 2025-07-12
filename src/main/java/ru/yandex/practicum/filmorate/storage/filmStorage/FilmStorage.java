@@ -22,4 +22,9 @@ public interface FilmStorage {
 
     Collection<Film> getDirectorsFilmsByYear(int filmId);
 
+    Collection<Film> searchFilmsByDirector(String query);
+
+    Collection<Film> searchFilmsByTitle(String query);
+
+    Collection<Film> searchFilmsByDirectorAndTitle(String query);
 }
