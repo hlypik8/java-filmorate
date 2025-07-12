@@ -186,13 +186,16 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
-    public Collection<Film> getPopularFilms(int count) {
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+
         String query = """
-                SELECT f.*,
-                COUNT(l.user_id) AS likes_count
-                FROM films AS f
-                LEFT JOIN likes AS l
-                ON l.film_id = f.id
+                 SELECT f.*,
+                        COUNT(l.user_id) AS likes_count
+                FROM films f
+                LEFT JOIN likes l ON l.film_id = f.id
+                LEFT JOIN films_genres fg ON fg.film_id = f.id
+                WHERE ( ? IS NULL OR fg.genre_id = ? )
+                       AND ( ? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ? )
                 GROUP BY
                 f.id,
                 f.name,
@@ -204,6 +207,6 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 LIMIT ?;
                 """;
 
-        return findMany(query, filmRowMapper, count);
+        return findMany(query, filmRowMapper, genreId, genreId, year, year, count);
     }
 }
