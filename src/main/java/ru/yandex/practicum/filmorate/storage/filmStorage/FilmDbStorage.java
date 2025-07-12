@@ -235,13 +235,16 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
-    public Collection<Film> getPopularFilms(int count) {
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+
         String query = """
-                SELECT f.*,
-                COUNT(l.user_id) AS likes_count
-                FROM films AS f
-                LEFT JOIN likes AS l
-                ON l.film_id = f.id
+                 SELECT f.*,
+                        COUNT(l.user_id) AS likes_count
+                FROM films f
+                LEFT JOIN likes l ON l.film_id = f.id
+                LEFT JOIN films_genres fg ON fg.film_id = f.id
+                WHERE ( ? IS NULL OR fg.genre_id = ? )
+                       AND ( ? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ? )
                 GROUP BY
                 f.id,
                 f.name,
@@ -253,6 +256,32 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 LIMIT ?;
                 """;
 
-        return findMany(query, filmRowMapper, count);
+        return findMany(query, filmRowMapper, genreId, genreId, year, year, count);
+    }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+
+        String query = """
+                SELECT
+                    f.*,
+                    COUNT(l.user_id) AS likes_count
+                FROM films AS f
+                JOIN mpa_ratings AS m ON f.mpa_rating_id = m.id
+                JOIN likes AS l ON f.id = l.film_id
+                WHERE f.id IN (
+                    SELECT film_id
+                    FROM likes
+                    WHERE user_id = ?
+                )
+                AND f.id IN (
+                    SELECT film_id
+                    FROM likes
+                    WHERE user_id = ?
+                )
+                GROUP BY f.id, m.name
+                ORDER BY likes_count DESC;
+                """;
+
+        return findMany(query, filmRowMapper, userId, friendId);
     }
 }
