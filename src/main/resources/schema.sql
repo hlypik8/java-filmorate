@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS friends (
   user_id integer NOT NULL,
   friend_id integer NOT NULL,
   accepted boolean NOT NULL DEFAULT FALSE,
-  CONSTRAINT fk_friends_user FOREIGN KEY (user_id) REFERENCES users(id),
-  CONSTRAINT fk_friends_friend FOREIGN KEY (friend_id) REFERENCES users(id)
+  CONSTRAINT fk_friends_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_friends_friend FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS genres (
