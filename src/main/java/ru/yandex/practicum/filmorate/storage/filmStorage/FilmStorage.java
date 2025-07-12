@@ -22,4 +22,5 @@ public interface FilmStorage {
 
     Collection<Film> getDirectorsFilmsByYear(int filmId);
 
+    Collection<Film> getCommonFilms(int userId, int friendId);
 }

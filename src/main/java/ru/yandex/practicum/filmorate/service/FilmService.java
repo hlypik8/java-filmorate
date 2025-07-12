@@ -110,6 +110,12 @@ public class FilmService {
 
         return filmStorage.getPopularFilms(count, genreId, year).stream().toList();
     }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        log.info("Запрос общих фильмов пользователя {} и {}", userId, friendId);
+
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }
 
 
