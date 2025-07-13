@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 @Repository
 public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorage {
