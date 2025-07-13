@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class ReviewDbStorage extends BaseStorage<Review> {
@@ -26,14 +28,24 @@ public class ReviewDbStorage extends BaseStorage<Review> {
                 .withTableName("reviews")
                 .usingGeneratedKeyColumns("review_id");
 
-        int id = simpleJdbcInsert.executeAndReturnKey(review.toMap()).intValue();
+        Map<String, Object> values = new HashMap<>();
+        values.put("content", review.getContent());
+        values.put("is_positive", review.getIsPositive());
+        values.put("user_id", review.getUserId());
+        values.put("film_id", review.getFilmId());
+        values.put("useful", review.getUseful());
+
+        int id = simpleJdbcInsert.executeAndReturnKey(values).intValue();
         review.setReviewId(id);
         return review;
     }
 
     public Review updateReview(Review review) {
         String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-        int updated = jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getReviewId());
+        int updated = jdbcTemplate.update(sql,
+                review.getContent(),
+                review.getIsPositive(),
+                review.getReviewId());
 
         if (updated == 0) {
             throw new NotFoundException("Отзыв не найден");
@@ -59,12 +71,12 @@ public class ReviewDbStorage extends BaseStorage<Review> {
 
     public List<Review> getReviewsByFilmId(int filmId, int count) {
         String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
-        return findMany(sql, reviewRowMapper, filmId, count);
+        return jdbcTemplate.query(sql, reviewRowMapper, filmId, count);
     }
 
     public List<Review> getAllReviews(int count) {
         String sql = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
-        return findMany(sql, reviewRowMapper, count);
+        return jdbcTemplate.query(sql, reviewRowMapper, count);
     }
 
     public void addRating(int reviewId, int userId, boolean isLike) {
