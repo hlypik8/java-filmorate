@@ -5,18 +5,19 @@ import lombok.Data;
 
 @Data
 public class Review {
-    private int reviewId;
+    private Integer reviewId;
 
-    @NotBlank(message = "Отзыв не может быть пустым")
+    @NotBlank(message = "Content cannot be blank")
+    @Size(max = 2000, message = "Content must be less than 2000 characters")
     private String content;
 
-    @NotNull(message = "Тип отзыва обязателен")
+    @NotNull(message = "isPositive cannot be null")
     private Boolean isPositive;
 
-    @Positive(message = "ID пользователя должен быть положительным")
+    @Positive(message = "User ID must be positive")
     private Integer userId;
 
-    @Positive(message = "ID фильма должен быть положительным")
+    @Positive(message = "Film ID must be positive")
     private Integer filmId;
 
     private int useful = 0;
