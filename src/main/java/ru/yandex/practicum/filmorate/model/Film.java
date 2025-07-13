@@ -39,4 +39,8 @@ public class Film {
     @NotNull
     @Valid
     private Set<Genre> genres = new LinkedHashSet<>();
+
+    @NotNull
+    @Valid
+    private Set<Director> directors = new HashSet<>();
 }

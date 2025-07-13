@@ -31,6 +31,18 @@ public class FilmService {
         return filmStorage.getFilmsList();
     }
 
+    public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
+        log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
+        if (sortBy.equals("likes")) {
+            return filmStorage.getDirectorsFilmsByLikes(directorId);
+        }
+        if (sortBy.equals("year")) {
+            return filmStorage.getDirectorsFilmsByYear(directorId);
+        }
+
+        return null;
+    }
+
     public Film getFilmById(int filmId) {
         log.info("Получение фильма с id {}", filmId);
         return filmStorage.getFilmById(filmId);
@@ -93,10 +105,16 @@ public class FilmService {
         log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         log.info("Запрос {} популярных фильмов", count);
 
-        return filmStorage.getPopularFilms(count).stream().toList();
+        return filmStorage.getPopularFilms(count, genreId, year).stream().toList();
+    }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        log.info("Запрос общих фильмов пользователя {} и {}", userId, friendId);
+
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
 
