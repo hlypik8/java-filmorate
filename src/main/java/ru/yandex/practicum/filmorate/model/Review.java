@@ -27,4 +27,5 @@ public class Review {
     private int useful = 0;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
 }

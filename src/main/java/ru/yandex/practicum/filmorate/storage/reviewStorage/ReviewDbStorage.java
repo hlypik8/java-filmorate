@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.reviewStorage;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -11,12 +10,18 @@ import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewRowMapper reviewRowMapper;
+
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewRowMapper reviewRowMapper) {
+        super(jdbcTemplate);
+        this.jdbcTemplate = jdbcTemplate;
+        this.reviewRowMapper = reviewRowMapper;
+    }
 
     @Override
     public Review create(Review review) {
@@ -57,7 +62,7 @@ public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorag
     @Override
     public void delete(int id) {
         String sql = "DELETE FROM reviews WHERE review_id = ?";
-        if (!delete(sql, id)) {
+        if (jdbcTemplate.update(sql, id) == 0) {
             throw new ReviewNotFoundException("Отзыв с id=" + id + " не найден");
         }
     }
@@ -82,19 +87,21 @@ public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorag
             params = new Object[]{filmId, count};
         }
 
-        return findMany(sql, reviewRowMapper, params);
+        return jdbcTemplate.query(sql, reviewRowMapper, params);
     }
 
     @Override
     public void addLike(int reviewId, int userId) {
-        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, TRUE)";
+        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, TRUE) "
+                + "ON CONFLICT (review_id, user_id) DO UPDATE SET is_like = TRUE";
         jdbcTemplate.update(sql, reviewId, userId);
         updateUseful(reviewId, 1);
     }
 
     @Override
     public void addDislike(int reviewId, int userId) {
-        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, FALSE)";
+        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, FALSE) "
+                + "ON CONFLICT (review_id, user_id) DO UPDATE SET is_like = FALSE";
         jdbcTemplate.update(sql, reviewId, userId);
         updateUseful(reviewId, -1);
     }
