@@ -23,6 +23,26 @@ public class ReviewDbStorage {
     private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
 
+    public void addRating(Integer reviewId, int userId, boolean isLike) {
+        checkReviewExists(reviewId);
+        checkUserExists(userId);
+
+        String sql = "MERGE INTO review_ratings (review_id, user_id, is_positive) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, reviewId, userId, isLike);
+        updateUseful(reviewId);
+    }
+
+    public void removeRating(Integer reviewId, int userId) {
+        String sql = "DELETE FROM review_ratings WHERE review_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, reviewId, userId);
+        updateUseful(reviewId);
+    }
+
+    public List<Review> getAllReviews(int count) {
+        String sql = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
+        return jdbcTemplate.query(sql, reviewRowMapper, count);
+    }
+
     public Review addReview(Review review) {
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
