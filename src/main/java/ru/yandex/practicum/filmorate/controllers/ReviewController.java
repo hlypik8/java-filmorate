@@ -2,14 +2,12 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
-import java.util.Collection;
+import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
@@ -17,30 +15,30 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public Review create(@Valid @RequestBody Review review) {
-        return reviewService.create(review);
+    public Review addReview(@Valid @RequestBody Review review) {
+        return reviewService.addReview(review);
     }
 
     @PutMapping
-    public Review update(@Valid @RequestBody Review review) {
-        return reviewService.update(review);
+    public Review updateReview(@Valid @RequestBody Review review) {
+        return reviewService.updateReview(review);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        reviewService.delete(id);
+    public void deleteReview(@PathVariable int id) {
+        reviewService.deleteReview(id);
     }
 
     @GetMapping("/{id}")
-    public Review getById(@PathVariable int id) {
-        return reviewService.getById(id);
+    public Review getReview(@PathVariable int id) {
+        return reviewService.getReviewById(id);
     }
 
     @GetMapping
-    public Collection<Review> getByFilmId(
+    public List<Review> getReviews(
             @RequestParam(required = false) Integer filmId,
             @RequestParam(defaultValue = "10") int count) {
-        return reviewService.getByFilmId(filmId, count);
+        return reviewService.getReviews(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -3,16 +3,15 @@ package ru.yandex.practicum.filmorate.storage.reviewStorage;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 @Repository
-public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorage {
+public class ReviewDbStorage extends BaseStorage<Review> {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewRowMapper reviewRowMapper;
 
@@ -22,107 +21,68 @@ public class ReviewDbStorage extends BaseStorage<Review> implements ReviewStorag
         this.reviewRowMapper = reviewRowMapper;
     }
 
-    @Override
-    public Review create(Review review) {
+    public Review addReview(Review review) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("reviews")
                 .usingGeneratedKeyColumns("review_id");
 
-        Map<String, Object> values = Map.of(
-                "content", review.getContent(),
-                "is_positive", review.getIsPositive(),
-                "user_id", review.getUserId(),
-                "film_id", review.getFilmId(),
-                "useful", review.getUseful(),
-                "created_at", review.getCreatedAt()
-        );
-
-        int id = simpleJdbcInsert.executeAndReturnKey(values).intValue();
+        int id = simpleJdbcInsert.executeAndReturnKey(review.toMap()).intValue();
         review.setReviewId(id);
         return review;
     }
 
-    @Override
-    public Review update(Review review) {
+    public Review updateReview(Review review) {
         String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-
-        int updated = jdbcTemplate.update(sql,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getReviewId());
+        int updated = jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getReviewId());
 
         if (updated == 0) {
-            throw new ReviewNotFoundException("Отзыв с id=" + review.getReviewId() + " не найден");
+            throw new NotFoundException("Отзыв не найден");
         }
-
-        return getById(review.getReviewId());
+        return getReviewById(review.getReviewId());
     }
 
-    @Override
-    public void delete(int id) {
+    public void deleteReview(int id) {
         String sql = "DELETE FROM reviews WHERE review_id = ?";
-        if (jdbcTemplate.update(sql, id) == 0) {
-            throw new ReviewNotFoundException("Отзыв с id=" + id + " не найден");
+        if (!delete(sql, id)) {
+            throw new NotFoundException("Отзыв не найден");
         }
     }
 
-    @Override
-    public Review getById(int id) {
+    public Review getReviewById(int id) {
         String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        return findOne(sql, reviewRowMapper, id)
-                .orElseThrow(() -> new ReviewNotFoundException("Отзыв с id=" + id + " не найден"));
-    }
-
-    @Override
-    public Collection<Review> getByFilmId(Integer filmId, int count) {
-        String sql;
-        Object[] params;
-
-        if (filmId == null) {
-            sql = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
-            params = new Object[]{count};
-        } else {
-            sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
-            params = new Object[]{filmId, count};
+        Review review = findOne(sql, reviewRowMapper, id);
+        if (review == null) {
+            throw new NotFoundException("Отзыв не найден");
         }
-
-        return jdbcTemplate.query(sql, reviewRowMapper, params);
+        return review;
     }
 
-    @Override
-    public void addLike(int reviewId, int userId) {
-        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, TRUE) "
-                + "ON CONFLICT (review_id, user_id) DO UPDATE SET is_like = TRUE";
+    public List<Review> getReviewsByFilmId(int filmId, int count) {
+        String sql = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
+        return findMany(sql, reviewRowMapper, filmId, count);
+    }
+
+    public List<Review> getAllReviews(int count) {
+        String sql = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
+        return findMany(sql, reviewRowMapper, count);
+    }
+
+    public void addRating(int reviewId, int userId, boolean isLike) {
+        String sql = "MERGE INTO review_ratings (review_id, user_id, is_positive) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, reviewId, userId, isLike);
+        updateUseful(reviewId);
+    }
+
+    public void removeRating(int reviewId, int userId) {
+        String sql = "DELETE FROM review_ratings WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
-        updateUseful(reviewId, 1);
+        updateUseful(reviewId);
     }
 
-    @Override
-    public void addDislike(int reviewId, int userId) {
-        String sql = "INSERT INTO review_likes (review_id, user_id, is_like) VALUES (?, ?, FALSE) "
-                + "ON CONFLICT (review_id, user_id) DO UPDATE SET is_like = FALSE";
-        jdbcTemplate.update(sql, reviewId, userId);
-        updateUseful(reviewId, -1);
-    }
-
-    @Override
-    public void removeLike(int reviewId, int userId) {
-        String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND is_like = TRUE";
-        if (jdbcTemplate.update(sql, reviewId, userId) > 0) {
-            updateUseful(reviewId, -1);
-        }
-    }
-
-    @Override
-    public void removeDislike(int reviewId, int userId) {
-        String sql = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ? AND is_like = FALSE";
-        if (jdbcTemplate.update(sql, reviewId, userId) > 0) {
-            updateUseful(reviewId, 1);
-        }
-    }
-
-    private void updateUseful(int reviewId, int delta) {
-        String sql = "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
-        jdbcTemplate.update(sql, delta, reviewId);
+    private void updateUseful(int reviewId) {
+        String sql = "UPDATE reviews SET useful = " +
+                "(SELECT SUM(CASE WHEN is_positive THEN 1 ELSE -1 END) FROM review_ratings WHERE review_id = ?) " +
+                "WHERE review_id = ?";
+        jdbcTemplate.update(sql, reviewId, reviewId);
     }
 }

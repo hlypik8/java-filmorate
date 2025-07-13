@@ -10,19 +10,17 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class BaseStorage<T> {
 
     protected final JdbcTemplate jdbcTemplate;
 
-    protected Optional<T> findOne(String query, RowMapper<T> rowMapper, Object... params) {
+    protected T findOne(String query, RowMapper<T> rowMapper, Object... params) {
         try {
-            T result = jdbcTemplate.queryForObject(query, rowMapper, params);
-            return Optional.ofNullable(result);
+            return jdbcTemplate.queryForObject(query, rowMapper, params);
         } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
+            return null;
         }
     }
 
