@@ -23,7 +23,7 @@ public class ReviewDbStorage {
     private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
 
-    public void addRating(Integer reviewId, int userId, boolean isLike) {
+    public void addRating(int reviewId, int userId, boolean isLike) {
         checkReviewExists(reviewId);
         checkUserExists(userId);
 
@@ -32,7 +32,7 @@ public class ReviewDbStorage {
         updateUseful(reviewId);
     }
 
-    public void removeRating(Integer reviewId, int userId) {
+    public void removeRating(int reviewId, int userId) {
         String sql = "DELETE FROM review_ratings WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, reviewId, userId);
         updateUseful(reviewId);
@@ -135,6 +135,7 @@ public class ReviewDbStorage {
                 "WHERE review_id = ?";
         jdbcTemplate.update(sql, reviewId, reviewId);
     }
+
 
     private void checkReviewExists(int reviewId) {
         if (!reviewExists(reviewId)) {
