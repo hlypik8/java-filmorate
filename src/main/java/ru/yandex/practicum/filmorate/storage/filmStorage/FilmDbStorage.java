@@ -83,6 +83,55 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return findMany(query, filmRowMapper, directorId);
     }
 
+    @Override
+    public Collection<Film> searchFilmsByDirector(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM directors d
+            JOIN films_directors fd ON d.id = fd.director_id
+            JOIN films f ON fd.film_id = f.id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE d.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC;
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%");
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByTitle(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE f.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%");
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByDirectorAndTitle(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN likes l ON f.id = l.film_id
+            LEFT JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.id
+            WHERE f.name ILIKE ? OR d.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%", "%" + searchQuery + "%");
+    }
+
     public Film newFilm(Film film) {
 
         String query = """

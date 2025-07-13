@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -66,6 +67,11 @@ public class FilmController {
     public Collection<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
                                            @RequestParam(name = "friendId") int friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> search(@RequestParam String query, @RequestParam List<String> by) {
+        return filmService.searchFilms(query, by);
     }
 
     @ExceptionHandler

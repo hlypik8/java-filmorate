@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.InvalidRequestFormat;
 import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -88,7 +89,6 @@ public class FilmService {
         }
     }
 
-
     public void addLike(int userId, int filmId) {
         log.info("Добавление лайка фильму {} от пользователя {}", filmId, userId);
 
@@ -115,6 +115,19 @@ public class FilmService {
         log.info("Запрос общих фильмов пользователя {} и {}", userId, friendId);
 
         return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.size() == 1 && by.contains("title")) {
+            return filmStorage.searchFilmsByTitle(query);
+        }
+        if (by.size() == 1 && by.contains("director")) {
+            return filmStorage.searchFilmsByDirector(query);
+        }
+        if (by.contains("title") && by.contains("director")) {
+            return filmStorage.searchFilmsByDirectorAndTitle(query);
+        }
+        throw new InvalidRequestFormat("Поддерживаются только значения 'title' и 'director'");
     }
 }
 
