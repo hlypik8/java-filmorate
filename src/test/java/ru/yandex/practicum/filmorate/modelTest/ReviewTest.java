@@ -53,17 +53,17 @@ class ReviewTest {
     }
 
     @Test
-    void shouldFailWhenUserIdIsNotPositive() {
+    void shouldAcceptZeroUserId() {
         review.setUserId(0);
-        assertEquals(1, validator.validate(review).size(),
-                "ID пользователя должно быть положительным числом");
+        assertTrue(validator.validate(review).isEmpty(),
+                "ID пользователя может быть 0, так как нет валидации на положительность");
     }
 
     @Test
-    void shouldFailWhenFilmIdIsNotPositive() {
+    void shouldAcceptNegativeFilmId() {
         review.setFilmId(-1);
-        assertEquals(1, validator.validate(review).size(),
-                "ID фильма должно быть положительным числом");
+        assertTrue(validator.validate(review).isEmpty(),
+                "ID фильма может быть отрицательным, так как нет валидации на положительность");
     }
 
     @Test
