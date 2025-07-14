@@ -4,13 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/reviews")
@@ -30,6 +27,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteReview(@PathVariable int id) {
         reviewService.deleteReview(id);
     }
@@ -47,33 +45,20 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         reviewService.addLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addDislike(@PathVariable int id, @PathVariable int userId) {
         reviewService.addDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLike(@PathVariable int id, @PathVariable int userId) {
         reviewService.removeLike(id, userId);
-    }
-
-    @ExceptionHandler(NotFoundException.class)
-    public Map<String, String> handleNotFound(NotFoundException e) {
-        return Map.of(
-                "error", "Not Found",
-                "message", e.getMessage()
-        );
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public Map<String, String> handleResponseStatus(ResponseStatusException e) {
-        return Map.of(
-                "error", e.getReason(),
-                "message", e.getReason()
-        );
     }
 }

@@ -34,20 +34,6 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     }
 
     public Review addReview(Review review) {
-        // Проверка существования пользователя
-        try {
-            userStorage.getUserById(review.getUserId());
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Пользователь с id=" + review.getUserId() + " не найден");
-        }
-
-        // Проверка существования фильма
-        try {
-            filmStorage.getFilmById(review.getFilmId());
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Фильм с id=" + review.getFilmId() + " не найден");
-        }
-
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("reviews")
                 .usingGeneratedKeyColumns("review_id");
@@ -57,11 +43,10 @@ public class ReviewDbStorage extends BaseStorage<Review> {
         parameters.put("is_positive", review.getIsPositive());
         parameters.put("user_id", review.getUserId());
         parameters.put("film_id", review.getFilmId());
-        parameters.put("useful", 0); // Начальное значение полезности
+        parameters.put("useful", 0);
 
-        int reviewId = simpleJdbcInsert.executeAndReturnKey(parameters).intValue();
-        review.setReviewId(reviewId);
-        review.setUseful(0);
+        int id = simpleJdbcInsert.executeAndReturnKey(parameters).intValue();
+        review.setReviewId(id);
         return review;
     }
 
