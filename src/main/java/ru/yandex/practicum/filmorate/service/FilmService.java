@@ -98,48 +98,6 @@ public class FilmService {
         return filmStorage.getPopularFilms(count).stream().toList();
     }
 
-    public List<Film> getRecommendations(int userId) {
-        Set<Integer> likedFilms = new HashSet<>(likesDbStorage.getLikesByUser(userId));
-
-        Map<Integer, Integer> similarUsers = getUsersWithSimilarLikes(userId, likedFilms);
-
-        List<Film> recommendedFilms = new ArrayList<>();
-        for (Integer similarUserId : similarUsers.keySet()) {
-            Set<Integer> filmsLikedBySimilarUser = new HashSet<>(likesDbStorage.getLikesByUser(similarUserId));
-
-            for (Integer filmId : filmsLikedBySimilarUser) {
-                if (!likedFilms.contains(filmId)) {
-                    Film film = getFilmById(filmId);
-                    recommendedFilms.add(film);
-                }
-            }
-        }
-
-        return recommendedFilms;
-    }
-
-    private Set<Integer> getLikedFilmByUser(int userId) {
-        return new HashSet<>(likesDbStorage.getLikesByUser(userId));
-    }
-
-    private Map<Integer, Integer> getUsersWithSimilarLikes(int userId, Set<Integer> likedFilms) {
-        Map<Integer, Integer> similarUsers = new HashMap<>();
-
-        for (Integer filmId : likedFilms) {
-            List<Integer> usersWhoLikedFilm = likesDbStorage.getUsersWhoLikedFilm(filmId);
-
-            for (Integer similarUserId : usersWhoLikedFilm) {
-                if (similarUserId != userId) {
-                    similarUsers.put(similarUserId, similarUsers.getOrDefault(similarUserId, 0) + 1);
-                }
-            }
-        }
-
-        return similarUsers.entrySet().stream()
-                .sorted((entry1, entry2) -> Integer.compare(entry2.getValue(), entry1.getValue()))  // Сортировка по количеству пересечений
-                .limit(5)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }
 
 
