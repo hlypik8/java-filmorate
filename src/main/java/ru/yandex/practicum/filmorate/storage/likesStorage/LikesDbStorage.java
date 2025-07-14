@@ -55,5 +55,4 @@ public class LikesDbStorage extends BaseStorage<Integer> {
         return new ArrayList<>(findMany(query, (rs, rowNum) -> rs.getInt("user_id"), filmId));
     }
 
-
 }
