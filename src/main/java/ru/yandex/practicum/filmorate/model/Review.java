@@ -14,10 +14,8 @@ public class Review {
     @NotNull(message = "isPositive cannot be null")
     private Boolean isPositive;
 
-    @Positive(message = "User ID must be positive")
     private Integer userId;
 
-    @Positive(message = "Film ID must be positive")
     private Integer filmId;
 
     private int useful = 0;
