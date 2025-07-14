@@ -3,15 +3,14 @@ package ru.yandex.practicum.filmorate.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reviews")
@@ -31,7 +30,6 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteReview(@PathVariable int id) {
         reviewService.deleteReview(id);
     }
@@ -64,7 +62,6 @@ public class ReviewController {
     }
 
     @ExceptionHandler(NotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(NotFoundException e) {
         return Map.of(
                 "error", "Not Found",
@@ -72,17 +69,11 @@ public class ReviewController {
         );
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidation(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(ResponseStatusException.class)
+    public Map<String, String> handleResponseStatus(ResponseStatusException e) {
         return Map.of(
-                "error", "Validation failed",
-                "errors", ex.getBindingResult().getFieldErrors().stream()
-                        .map(error -> Map.of(
-                                "field", error.getField(),
-                                "message", error.getDefaultMessage()
-                        ))
-                        .collect(Collectors.toList())
+                "error", e.getReason(),
+                "message", e.getReason()
         );
     }
 }
