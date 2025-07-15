@@ -35,11 +35,11 @@ public class RecommendationService {
             log.info("Пользователи, которые поставили лайк фильму {}: {}", filmId, usersWhoLikedFilm);
 
             usersWhoLikedFilm.stream()
-                    .filter(userWhoLiked -> userWhoLiked != userId) // исключаем текущего пользователя
+                    .filter(userWhoLiked -> userWhoLiked != userId)
                     .forEach(userWhoLiked -> {
                         Collection<Integer> otherUserLikes = likesDbStorage.getLikesByUser(userWhoLiked);
                         otherUserLikes.stream()
-                                .filter(otherFilmId -> !likedFilmSet.contains(otherFilmId)) // только фильмы, которые не нравятся текущему пользователю
+                                .filter(otherFilmId -> !likedFilmSet.contains(otherFilmId))
                                 .forEach(otherFilmId -> {
                                     double observedDiff = 1;
                                     diff.computeIfAbsent(filmId, k -> new HashMap<>())
@@ -63,8 +63,8 @@ public class RecommendationService {
                     }
                     return null;
                 })
-                .filter(Objects::nonNull) // Отфильтровываем null значения
-                .distinct() // Убираем повторяющиеся фильмы
+                .filter(Objects::nonNull)
+                .distinct()
                 .collect(Collectors.toList());
 
         log.info("Рекомендованные фильмы для пользователя {}: {}", userId, recommendedFilms);
