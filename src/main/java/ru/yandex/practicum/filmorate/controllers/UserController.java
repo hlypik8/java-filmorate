@@ -22,7 +22,6 @@ public class UserController {
 
     private final UserService userService;
 
-
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId) {
         userService.addFriend(id, friendId);
@@ -43,10 +42,14 @@ public class UserController {
         return userService.getUserFriends(id);
     }
 
-
     @GetMapping
     public Collection<User> findAll() {
         return userService.getUsersList();
+    }
+
+    @GetMapping("/{userId}")
+    public User findById(@PathVariable int userId) {
+        return userService.getUserById(userId);
     }
 
     @PostMapping
@@ -57,6 +60,11 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         return userService.updateUser(user);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable int userId) {
+        userService.removeUser(userId);
     }
 
     @ExceptionHandler

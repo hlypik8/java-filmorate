@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.InvalidRequestFormat;
 import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -31,6 +32,18 @@ public class FilmService {
         return filmStorage.getFilmsList();
     }
 
+    public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
+        log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
+        if (sortBy.equals("likes")) {
+            return filmStorage.getDirectorsFilmsByLikes(directorId);
+        }
+        if (sortBy.equals("year")) {
+            return filmStorage.getDirectorsFilmsByYear(directorId);
+        }
+
+        return null;
+    }
+
     public Film getFilmById(int filmId) {
         log.info("Получение фильма с id {}", filmId);
         return filmStorage.getFilmById(filmId);
@@ -56,6 +69,12 @@ public class FilmService {
 
         log.info("Фильм успешно обновлен {}", film);
         return filmStorage.updateFilm(film);
+    }
+
+    public void removeFilm(int filmId) {
+        log.info("Удаление фильма с id {}", filmId);
+        filmStorage.removeFilm(filmId);
+        log.info("Фильм с id {} успешно удален", filmId);
     }
 
     private void validateMpa(Mpa mpa) {
@@ -92,10 +111,29 @@ public class FilmService {
         log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         log.info("Запрос {} популярных фильмов", count);
 
-        return filmStorage.getPopularFilms(count).stream().toList();
+        return filmStorage.getPopularFilms(count, genreId, year).stream().toList();
+    }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+        log.info("Запрос общих фильмов пользователя {} и {}", userId, friendId);
+
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.size() == 1 && by.contains("title")) {
+            return filmStorage.searchFilmsByTitle(query);
+        }
+        if (by.size() == 1 && by.contains("director")) {
+            return filmStorage.searchFilmsByDirector(query);
+        }
+        if (by.contains("title") && by.contains("director")) {
+            return filmStorage.searchFilmsByDirectorAndTitle(query);
+        }
+        throw new InvalidRequestFormat("Поддерживаются только значения 'title' и 'director'");
     }
 
 }

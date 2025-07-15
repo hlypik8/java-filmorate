@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.filmStorage;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
@@ -46,6 +47,91 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
+    public Collection<Film> getDirectorsFilmsByLikes(int directorId) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY film_id
+            ) l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            ORDER BY COALESCE(l.like_count, 0) DESC;
+            """;
+
+        return findMany(query, filmRowMapper, directorId);
+    }
+
+    public Collection<Film> getDirectorsFilmsByYear(int directorId) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS like_count
+                FROM likes
+                GROUP BY film_id
+            ) l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            ORDER BY f.release_date ASC;
+            """;
+
+        return findMany(query, filmRowMapper, directorId);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByDirector(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM directors d
+            JOIN films_directors fd ON d.id = fd.director_id
+            JOIN films f ON fd.film_id = f.id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE d.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC;
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%");
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByTitle(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE f.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%");
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByDirectorAndTitle(String searchQuery) {
+
+        String query = """
+            SELECT f.*
+            FROM films f
+            LEFT JOIN likes l ON f.id = l.film_id
+            LEFT JOIN films_directors fd ON f.id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.id
+            WHERE f.name ILIKE ? OR d.name ILIKE ?
+            GROUP BY f.id
+            ORDER BY COUNT(l.id) DESC
+            """;
+
+        return findMany(query, filmRowMapper, "%" + searchQuery + "%", "%" + searchQuery + "%");
+    }
+
     public Film newFilm(Film film) {
 
         String query = """
@@ -63,6 +149,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         film.setId(id);
 
         saveGenres(film);
+        saveDirectors(film);
 
         return film;
     }
@@ -79,6 +166,18 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         }
     }
 
+    private void saveDirectors(Film film) {
+
+        String query = """
+                INSERT INTO films_directors (film_id, director_id)
+                VALUES (?, ?)
+                """;
+
+        for (Director director : film.getDirectors()) {
+            jdbcTemplate.update(query, film.getId(), director.getId());
+        }
+    }
+
     private void updateGenres(Film film) {
 
         String query = """
@@ -89,6 +188,18 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         update(query, film.getId());
 
         saveGenres(film);
+    }
+
+    private void updateDirectors(Film film) {
+
+        String query = """
+                DELETE FROM films_directors
+                WHERE film_id = ?;
+                """;
+
+        jdbcTemplate.update(query, film.getId());
+
+        saveDirectors(film);
     }
 
     public void removeFilm(int filmId) {
@@ -119,17 +230,21 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getId());
 
         updateGenres(film);
+        updateDirectors(film);
 
         return film;
     }
 
-    public Collection<Film> getPopularFilms(int count) {
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+
         String query = """
-                SELECT f.*,
-                       COUNT(l.user_id) AS likes_count
-                FROM films AS f
-                LEFT JOIN likes AS l
-                ON l.film_id = f.id
+                 SELECT f.*,
+                        COUNT(l.user_id) AS likes_count
+                FROM films f
+                LEFT JOIN likes l ON l.film_id = f.id
+                LEFT JOIN films_genres fg ON fg.film_id = f.id
+                WHERE ( ? IS NULL OR fg.genre_id = ? )
+                       AND ( ? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ? )
                 GROUP BY
                 f.id,
                 f.name,
@@ -141,6 +256,32 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 LIMIT ?;
                 """;
 
-        return findMany(query, filmRowMapper, count);
+        return findMany(query, filmRowMapper, genreId, genreId, year, year, count);
+    }
+
+    public Collection<Film> getCommonFilms(int userId, int friendId) {
+
+        String query = """
+                SELECT
+                    f.*,
+                    COUNT(l.user_id) AS likes_count
+                FROM films AS f
+                JOIN mpa_ratings AS m ON f.mpa_rating_id = m.id
+                JOIN likes AS l ON f.id = l.film_id
+                WHERE f.id IN (
+                    SELECT film_id
+                    FROM likes
+                    WHERE user_id = ?
+                )
+                AND f.id IN (
+                    SELECT film_id
+                    FROM likes
+                    WHERE user_id = ?
+                )
+                GROUP BY f.id, m.name
+                ORDER BY likes_count DESC;
+                """;
+
+        return findMany(query, filmRowMapper, userId, friendId);
     }
 }
