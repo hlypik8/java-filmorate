@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -36,22 +37,23 @@ public class LikesDbStorage extends BaseStorage<Integer> {
         delete(query, userId, filmId);
     }
 
-    public List<Integer> getLikesByUser(int userId) {
+    public Collection<Integer> getLikesByUser(int userId) {
         String query = """
                 SELECT film_id
                 FROM likes
                 WHERE user_id = ?;
                 """;
-        return new ArrayList<>(findMany(query, (rs, rowNum) -> rs.getInt("film_id"), userId));
+        return findMany(query, (rs, rowNum) -> rs.getInt("film_id"), userId);
     }
 
-    public List<Integer> getUsersWhoLikedFilm(int filmId) {
+
+    public Collection<Integer> getUsersWhoLikedFilm(int filmId) {
         String query = """
                 SELECT user_id
                 FROM likes
                 WHERE film_id = ?;
                 """;
-        return new ArrayList<>(findMany(query, (rs, rowNum) -> rs.getInt("user_id"), filmId));
+        return findMany(query, (rs, rowNum) -> rs.getInt("user_id"), filmId);
     }
 
 }

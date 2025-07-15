@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,12 +22,12 @@ public class RecommendationController {
     }
 
     @GetMapping("/{id}/recommendations")
-    public ResponseEntity<Collection<Film>> getRecommendations(@PathVariable("id") int userId) {
+    public Collection<Film> getRecommendations(@PathVariable("id") int userId) {
         log.info("Запрос на рекомендации для пользователя с ID: {}", userId);
         Collection<Film> recommendations = recommendationService.getRecommendations(userId);
         if (recommendations.isEmpty()) {
             log.info("Нет рекомендаций для пользователя с ID: {}", userId);
         }
-        return ResponseEntity.ok(recommendations);
+        return recommendations;
     }
 }

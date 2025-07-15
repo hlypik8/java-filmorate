@@ -20,23 +20,26 @@ public class RecommendationService {
     public List<Film> getRecommendations(int userId) {
         log.info("Получаем рекомендации для пользователя с ID: {}", userId);
 
-        Set<Integer> likedFilms = new HashSet<>(likesDbStorage.getLikesByUser(userId));
+        Collection<Integer> likedFilms = likesDbStorage.getLikesByUser(userId);
         log.info("Лайки пользователя {}: {}", userId, likedFilms);
+
+        Set<Integer> likedFilmSet = new HashSet<>(likedFilms);
 
         Map<Integer, Map<Integer, Double>> diff = new HashMap<>();
         Map<Integer, Map<Integer, Integer>> freq = new HashMap<>();
 
-        // Используем Stream API для обработки likedFilms
-        likedFilms.forEach(filmId -> {
-            List<Integer> usersWhoLikedFilm = likesDbStorage.getUsersWhoLikedFilm(filmId);
+        likedFilmSet.forEach(filmId -> {
+            List<Integer> usersWhoLikedFilm = likesDbStorage.getUsersWhoLikedFilm(filmId)
+                    .stream()
+                    .toList();
             log.info("Пользователи, которые поставили лайк фильму {}: {}", filmId, usersWhoLikedFilm);
 
             usersWhoLikedFilm.stream()
                     .filter(userWhoLiked -> userWhoLiked != userId) // исключаем текущего пользователя
                     .forEach(userWhoLiked -> {
-                        Set<Integer> otherUserLikes = new HashSet<>(likesDbStorage.getLikesByUser(userWhoLiked));
+                        Collection<Integer> otherUserLikes = likesDbStorage.getLikesByUser(userWhoLiked);
                         otherUserLikes.stream()
-                                .filter(otherFilmId -> !likedFilms.contains(otherFilmId)) // только фильмы, которые не нравятся текущему пользователю
+                                .filter(otherFilmId -> !likedFilmSet.contains(otherFilmId)) // только фильмы, которые не нравятся текущему пользователю
                                 .forEach(otherFilmId -> {
                                     double observedDiff = 1;
                                     diff.computeIfAbsent(filmId, k -> new HashMap<>())
@@ -54,7 +57,7 @@ public class RecommendationService {
                     double predictedValue = entry.getValue().getValue() / freq.get(entry.getKey()).get(entry.getValue().getKey());
                     if (predictedValue > 0) {
                         Film film = filmService.getFilmById(entry.getValue().getKey());
-                        if (!likedFilms.contains(film.getId())) {
+                        if (!likedFilmSet.contains(film.getId())) {
                             return film;
                         }
                     }
@@ -67,8 +70,7 @@ public class RecommendationService {
         log.info("Рекомендованные фильмы для пользователя {}: {}", userId, recommendedFilms);
         return recommendedFilms;
     }
-
-
 }
+
 
 
