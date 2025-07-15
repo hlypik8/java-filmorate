@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 
-import java.util.List;
+import java.util.Collection;
 
 @Slf4j
 @RestController
-@RequestMapping("/users/{id}")
+@RequestMapping("/users")
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
@@ -22,14 +22,13 @@ public class RecommendationController {
         this.recommendationService = recommendationService;
     }
 
-    @GetMapping("/recommendations")
-    public ResponseEntity<List<Film>> getRecommendations(@PathVariable int id) {
-        log.info("Запрос на рекомендации для пользователя с ID: {}", id);
-        List<Film> recommendations = recommendationService.getRecommendations(id);
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<Collection<Film>> getRecommendations(@PathVariable("id") int userId) {
+        log.info("Запрос на рекомендации для пользователя с ID: {}", userId);
+        Collection<Film> recommendations = recommendationService.getRecommendations(userId);
         if (recommendations.isEmpty()) {
-            log.info("Нет рекомендаций для пользователя с ID: {}", id);
+            log.info("Нет рекомендаций для пользователя с ID: {}", userId);
         }
         return ResponseEntity.ok(recommendations);
     }
-
 }
