@@ -71,6 +71,12 @@ public class FilmService {
         return filmStorage.updateFilm(film);
     }
 
+    public void removeFilm(int filmId) {
+        log.info("Удаление фильма с id {}", filmId);
+        filmStorage.removeFilm(filmId);
+        log.info("Фильм с id {} успешно удален", filmId);
+    }
+
     private void validateMpa(Mpa mpa) {
         if (mpaDbStorage.getMpaById(mpa.getId()) == null) {
             throw new MpaNotFoundException("Неверный рейтинг MPA");

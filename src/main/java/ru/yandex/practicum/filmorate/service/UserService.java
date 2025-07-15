@@ -24,6 +24,10 @@ public class UserService {
         return userStorage.getUsersList();
     }
 
+    public User getUserById(int userId) {
+        return userStorage.getUserById(userId);
+    }
+
     public User newUser(User user) {
         log.info("Создание нового пользователя {}", user);
         return userStorage.newUser(user);
@@ -34,6 +38,11 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
+    public void removeUser(int userId) {
+        log.info("Удаление пользователя с id {}", userId);
+        userStorage.removeUser(userId);
+        log.info("Пользователь с id {} успешно удален", userId);
+    }
 
     public void addFriend(int userId, int friendId) {
         log.info("Добавление дружбы между {} и {}", userId, friendId);
