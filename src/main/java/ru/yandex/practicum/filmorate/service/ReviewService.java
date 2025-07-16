@@ -43,7 +43,7 @@ public class ReviewService {
     public List<Review> getReviews(Integer filmId, int count) {
         if (filmId != null) {
             filmStorage.getFilmById(filmId);
-            return reviewStorage.getReviewsByFilmId(filmId, count);
+            return reviewStorage.getReviewsByFilmId(filmId, count).stream().toList();
         }
         return reviewStorage.getAllReviews(count).stream().toList();
     }

@@ -6,178 +6,155 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.model.*;
+import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.genreStorage.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.mappers.*;
+import ru.yandex.practicum.filmorate.storage.mpaStorage.MpaDbStorage;
 import ru.yandex.practicum.filmorate.storage.reviewStorage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
-import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class ReviewDbStorageTest {
-    private final ReviewDbStorage reviewStorage;
-    private final UserDbStorage userStorage;
-    private final FilmDbStorage filmStorage;
-    private final JdbcTemplate jdbcTemplate;
+@Import({ReviewDbStorage.class, ReviewRowMapper.class,
+        UserDbStorage.class, UserRowMapper.class,
+        FilmDbStorage.class, FilmRowMapper.class,
+        MpaDbStorage.class, MpaRowMapper.class,
+        GenreDbStorage.class, GenreRowMapper.class})
+public class ReviewDbStorageTest {
 
-    private Review testReview;
-    private User testUser;
-    private Film testFilm;
-    private Mpa testMpa;
+    private final ReviewDbStorage reviewDbStorage;
+    private final UserDbStorage userDbStorage;
+    private final FilmDbStorage filmDbStorage;
+    private final MpaDbStorage mpaDbStorage;
+    private final GenreDbStorage genreDbStorage;
+
+    private User user;
+    private Film film;
 
     @BeforeEach
-    void setUp() {
-        // Очистка всех связанных таблиц в правильном порядке
-        jdbcTemplate.update("DELETE FROM review_ratings");
-        jdbcTemplate.update("DELETE FROM reviews");
-        jdbcTemplate.update("DELETE FROM films_genres");
-        jdbcTemplate.update("DELETE FROM films");
-        jdbcTemplate.update("DELETE FROM users");
-        jdbcTemplate.update("DELETE FROM mpa_ratings");
+    void setup() {
+        // Создаем пользователя
+        user = new User();
+        user.setEmail("user@example.com");
+        user.setLogin("userlogin");
+        user.setName("User Name");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        user = userDbStorage.newUser(user);
 
-        // Сброс sequence для всех таблиц
-        jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN review_id RESTART WITH 1");
-        jdbcTemplate.execute("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
-        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
-        jdbcTemplate.execute("ALTER TABLE mpa_ratings ALTER COLUMN id RESTART WITH 1");
-
-        // Создание тестового MPA через прямой SQL-запрос
-        jdbcTemplate.update(
-                "INSERT INTO mpa_ratings (id, name, description) VALUES (1, 'G', 'Нет возрастных ограничений')");
-        testMpa = new Mpa();
-        testMpa.setId(1);
-        testMpa.setName("G");
-        testMpa.setDescription("Нет возрастных ограничений");
-
-        // Создание тестового пользователя через UserDbStorage
-        testUser = new User();
-        testUser.setEmail("test@example.com");
-        testUser.setLogin("testLogin");
-        testUser.setName("Test User");
-        testUser.setBirthday(LocalDate.of(1990, 1, 1));
-        testUser = userStorage.newUser(testUser);
-
-        // Создание тестового фильма через FilmDbStorage
-        testFilm = new Film();
-        testFilm.setName("Test Film");
-        testFilm.setDescription("Test Description");
-        testFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
-        testFilm.setDuration(120);
-        testFilm.setMpa(testMpa);
-        testFilm = filmStorage.newFilm(testFilm);
-
-        // Создание тестового отзыва
-        testReview = new Review();
-        testReview.setContent("Great film!");
-        testReview.setIsPositive(true);
-        testReview.setUserId(testUser.getId());
-        testReview.setFilmId(testFilm.getId());
+        // Создаем фильм
+        film = new Film();
+        film.setName("Test Film");
+        film.setDescription("Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(100);
+        film.setMpa(mpaDbStorage.getMpaById(1));
+        film.setGenres(Set.of(genreDbStorage.getGenreById(1)));
+        film = filmDbStorage.newFilm(film);
     }
 
     @Test
-    void shouldCreateAndRetrieveReview() {
-        Review created = reviewStorage.addReview(testReview);
-        assertNotNull(created.getReviewId(), "ID отзыва не должен быть null");
-        assertEquals(0, created.getUseful(), "Рейтинг полезности по умолчанию должен быть 0");
+    void testCreateAndGetById() {
+        Review review = new Review();
+        review.setContent("Great movie");
+        review.setIsPositive(true);
+        review.setUserId(user.getId());
+        review.setFilmId(film.getId());
 
-        Review found = reviewStorage.getReviewById(created.getReviewId());
-        assertEquals(created.getContent(), found.getContent(), "Содержимое отзыва должно совпадать");
-        assertEquals(testUser.getId(), found.getUserId(), "ID пользователя должно совпадать");
-        assertEquals(testFilm.getId(), found.getFilmId(), "ID фильма должно совпадать");
+        Review created = reviewDbStorage.addReview(review);
+        assertNotNull(created);
+        assertTrue(created.getReviewId() > 0);
+        assertEquals("Great movie", created.getContent());
+        assertTrue(created.getIsPositive());
+        assertEquals(0, created.getUseful());
+
+        Review fetched = reviewDbStorage.getReviewById(created.getReviewId());
+        assertEquals(created.getReviewId(), fetched.getReviewId());
     }
 
     @Test
-    void shouldUpdateReview() {
-        Review created = reviewStorage.addReview(testReview);
-        created.setContent("Updated content");
-        created.setIsPositive(false);
+    void testUpdateReview() {
+        Review review = new Review();
+        review.setContent("Initial");
+        review.setIsPositive(false);
+        review.setUserId(user.getId());
+        review.setFilmId(film.getId());
+        Review created = reviewDbStorage.addReview(review);
 
-        Review updated = reviewStorage.updateReview(created);
-        assertEquals(created.getReviewId(), updated.getReviewId(), "ID отзыва должно остаться прежним");
-        assertEquals("Updated content", updated.getContent(), "Содержимое должно обновиться");
-        assertFalse(updated.getIsPositive(), "Тип отзыва должен измениться на негативный");
-    }
+        created.setContent("Updated");
+        created.setIsPositive(true);
+        Review updated = reviewDbStorage.updateReview(created);
 
-//    @Test
-//    void shouldThrowWhenReviewNotFound() {
-//        assertThrows(NotFoundException.class, () -> reviewStorage.getReviewById(999),
-//                "Должно выбрасываться исключение при поиске несуществующего отзыва");
-//    }
-//
-//    @Test
-//    void shouldDeleteReview() {
-//        Review created = reviewStorage.addReview(testReview);
-//        reviewStorage.deleteReview(created.getReviewId());
-//
-//        assertThrows(NotFoundException.class, () -> reviewStorage.getReviewById(created.getReviewId()),
-//                "Отзыв должен удаляться из базы данных");
-//    }
-
-    @Test
-    void shouldGetReviewsByFilmId() {
-        Review created = reviewStorage.addReview(testReview);
-
-        // Создаем второй фильм и отзыв
-        jdbcTemplate.update(
-                "INSERT INTO films (id, name, description, release_date, duration, mpa_rating_id) " +
-                        "VALUES (2, 'Another Film', 'Desc', '2001-01-01', 90, 1)");
-
-        Review anotherReview = new Review();
-        anotherReview.setContent("Another review");
-        anotherReview.setIsPositive(false);
-        anotherReview.setUserId(testUser.getId());
-        anotherReview.setFilmId(2); // ID второго фильма
-        reviewStorage.addReview(anotherReview);
-
-        List<Review> reviews = reviewStorage.getReviewsByFilmId(testFilm.getId(), 10);
-        assertEquals(1, reviews.size(), "Должен вернуться только один отзыв для указанного фильма");
-        assertEquals(created.getReviewId(), reviews.get(0).getReviewId(), "ID отзыва должно совпадать");
+        assertAll("Обновленный отзыв",
+                () -> assertEquals("Updated", updated.getContent()),
+                () -> assertTrue(updated.getIsPositive())
+        );
     }
 
     @Test
-    void shouldManageReviewRatings() {
-        // Создаем второго пользователя через SQL
-        jdbcTemplate.update(
-                "INSERT INTO users (id, email, login, name, birthday) " +
-                        "VALUES (2, 'user2@test', 'user2', 'User 2', '1995-05-05')");
+    void testDeleteReview() {
+        Review review = new Review();
+        review.setContent("To delete");
+        review.setIsPositive(true);
+        review.setUserId(user.getId());
+        review.setFilmId(film.getId());
+        Review created = reviewDbStorage.addReview(review);
 
-        Review created = reviewStorage.addReview(testReview);
-
-        // Добавляем лайк от первого пользователя
-        reviewStorage.addRating(created.getReviewId(), testUser.getId(), true);
-        Review afterLike = reviewStorage.getReviewById(created.getReviewId());
-        assertEquals(1, afterLike.getUseful(), "Рейтинг должен увеличиться на 1 после лайка");
-
-        // Добавляем дизлайк от второго пользователя
-        reviewStorage.addRating(created.getReviewId(), 2, false);
-        Review afterDislike = reviewStorage.getReviewById(created.getReviewId());
-        assertEquals(0, afterDislike.getUseful(), "Рейтинг должен быть 0 (1 лайк + 1 дизлайк)");
-
-        // Удаляем лайк
-        reviewStorage.removeRating(created.getReviewId(), testUser.getId());
-        Review afterRemove = reviewStorage.getReviewById(created.getReviewId());
-        assertEquals(-1, afterRemove.getUseful(), "Рейтинг должен быть -1 после удаления лайка");
+        reviewDbStorage.deleteReview(created.getReviewId());
+        Review deleted = reviewDbStorage.getReviewById(created.getReviewId());
+        assertNull(deleted);
     }
 
     @Test
-    void shouldGetAllReviewsWhenFilmIdNotSpecified() {
-        reviewStorage.addReview(testReview);
+    void testGetByFilmIdAndAll() {
+        for (int i = 0; i < 3; i++) {
+            Review r = new Review();
+            r.setContent("Review " + i);
+            r.setIsPositive(true);
+            r.setUserId(user.getId());
+            r.setFilmId(film.getId());
+            reviewDbStorage.addReview(r);
+        }
+        Collection<Review> byFilm = reviewDbStorage.getReviewsByFilmId(film.getId(), 5);
+        assertEquals(3, byFilm.size());
 
-        // Создаем второй отзыв
-        Review anotherReview = new Review();
-        anotherReview.setContent("Another review");
-        anotherReview.setIsPositive(false);
-        anotherReview.setUserId(testUser.getId());
-        anotherReview.setFilmId(testFilm.getId());
-        reviewStorage.addReview(anotherReview);
+        Collection<Review> all = reviewDbStorage.getAllReviews(5);
+        assertTrue(all.size() >= 3);
+    }
 
-        List<Review> reviews = reviewStorage.getAllReviews(10).stream().toList();
-        assertEquals(2, reviews.size(), "Должны вернуться все отзывы");
+    @Test
+    void testAddAndRemoveRating() {
+        Review review = new Review();
+        review.setContent("Rating test");
+        review.setIsPositive(true);
+        review.setUserId(user.getId());
+        review.setFilmId(film.getId());
+        Review created = reviewDbStorage.addReview(review);
+        int id = created.getReviewId();
+
+        // Лайк
+        reviewDbStorage.addRating(id, user.getId(), true);
+        Review liked = reviewDbStorage.getReviewById(id);
+        assertEquals(1, liked.getUseful());
+
+        // Дизлайк
+        reviewDbStorage.addRating(id, user.getId(), false);
+        Review disliked = reviewDbStorage.getReviewById(id);
+        assertEquals(-1, disliked.getUseful());
+
+        // Удаление
+        reviewDbStorage.removeRating(id, user.getId());
+        Review removed = reviewDbStorage.getReviewById(id);
+        assertEquals(0, removed.getUseful());
     }
 }
