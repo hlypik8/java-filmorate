@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.reviewStorage;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -11,15 +9,13 @@ import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class ReviewDbStorage extends BaseStorage<Review> {
     private final JdbcTemplate jdbcTemplate;
     private final ReviewRowMapper reviewRowMapper;
-    private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
 
     public ReviewDbStorage(JdbcTemplate jdbcTemplate,
@@ -29,62 +25,63 @@ public class ReviewDbStorage extends BaseStorage<Review> {
         super(jdbcTemplate);
         this.jdbcTemplate = jdbcTemplate;
         this.reviewRowMapper = reviewRowMapper;
-        this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
 
     public Review addReview(Review review) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("reviews")
-                .usingGeneratedKeyColumns("review_id");
 
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("content", review.getContent());
-        parameters.put("is_positive", review.getIsPositive());
-        parameters.put("user_id", review.getUserId());
-        parameters.put("film_id", review.getFilmId());
-        parameters.put("useful", 0);
+        String query = """
+                INSERT INTO reviews (content, is_positive, user_id, film_id, useful)
+                VALUES (?,?,?,?,?);
+                """;
 
-        int id = simpleJdbcInsert.executeAndReturnKey(parameters).intValue();
+        int id = insert(query,
+                review.getContent(),
+                review.getIsPositive(),
+                review.getUserId(),
+                review.getFilmId(),
+                0);
+
         review.setReviewId(id);
+
         return review;
     }
 
     public Review updateReview(Review review) {
-        // Проверка существования отзыва
-        if (!reviewExists(review.getReviewId())) {
-            throw new NotFoundException("Отзыв с id=" + review.getReviewId() + " не найден");
-        }
 
-        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-        int updatedRows = jdbcTemplate.update(sql,
+        String query = """
+                UPDATE reviews
+                SET content = ?, is_positive = ?
+                WHERE review_id = ?
+                """;
+
+        update(query,
                 review.getContent(),
                 review.getIsPositive(),
                 review.getReviewId());
-
-        if (updatedRows == 0) {
-            throw new NotFoundException("Отзыв с id=" + review.getReviewId() + " не найден");
-        }
 
         return getReviewById(review.getReviewId());
     }
 
     public void deleteReview(int id) {
-        String sql = "DELETE FROM reviews WHERE review_id = ?";
-        int deletedRows = jdbcTemplate.update(sql, id);
 
-        if (deletedRows == 0) {
-            throw new NotFoundException("Отзыв с id=" + id + " не найден");
-        }
+        String query = """
+                DELETE FROM reviews
+                WHERE review_id = ?;
+                """;
+
+        delete(query, id);
     }
 
     public Review getReviewById(int id) {
-        String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, reviewRowMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Отзыв с id=" + id + " не найден");
-        }
+
+        String query = """
+                SELECT *
+                FROM reviews
+                WHERE review_id = ?;
+                """;
+
+        return findOne(query, reviewRowMapper, id);
     }
 
     public List<Review> getReviewsByFilmId(Integer filmId, int count) {
@@ -104,9 +101,15 @@ public class ReviewDbStorage extends BaseStorage<Review> {
         }
     }
 
-    public List<Review> getAllReviews(int count) {
-        String sql = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
-        return jdbcTemplate.query(sql, reviewRowMapper, count);
+    public Collection<Review> getAllReviews(int count) {
+        String query = """
+                SELECT *
+                FROM reviews
+                ORDER BY useful DESC
+                LIMIT ?;
+                """;
+
+        return findMany(query, reviewRowMapper, count);
     }
 
     public void addRating(int reviewId, int userId, boolean isLike) {

@@ -18,12 +18,13 @@ public class ReviewService {
     private final FilmStorage filmStorage;
 
     public Review addReview(Review review) {
-        validateUserAndFilm(review.getUserId(), review.getFilmId());
+        validateUser(review.getUserId());
+        validateFilm(review.getFilmId());
         return reviewStorage.addReview(review);
     }
 
     public Review updateReview(Review review) {
-        getReviewById(review.getReviewId()); // Проверка существования
+        validateReview(review.getReviewId());
         return reviewStorage.updateReview(review);
     }
 
@@ -41,45 +42,50 @@ public class ReviewService {
 
     public List<Review> getReviews(Integer filmId, int count) {
         if (filmId != null) {
-            filmStorage.getFilmById(filmId); // Проверка существования фильма
+            filmStorage.getFilmById(filmId);
             return reviewStorage.getReviewsByFilmId(filmId, count);
         }
-        return reviewStorage.getAllReviews(count);
+        return reviewStorage.getAllReviews(count).stream().toList();
     }
 
     public void addLike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        validateReview(reviewId);
+        validateUser(userId);
         reviewStorage.addRating(reviewId, userId, true);
     }
 
     public void addDislike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        validateReview(reviewId);
+        validateUser(userId);
         reviewStorage.addRating(reviewId, userId, false);
     }
 
     public void removeLike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        validateReview(reviewId);
+        validateUser(userId);
         reviewStorage.removeRating(reviewId, userId);
     }
 
     public void removeDislike(int reviewId, int userId) {
-        validateReviewAndUser(reviewId, userId);
+        validateReview(reviewId);
+        validateUser(userId);
         reviewStorage.removeRating(reviewId, userId);
     }
 
-    private void validateUserAndFilm(int userId, int filmId) {
+    private void validateUser(int userId) {
         if (userStorage.getUserById(userId) == null) {
             throw new NotFoundException("Пользователь не найден");
         }
+
+    }
+
+    private void validateFilm(int filmId) {
         if (filmStorage.getFilmById(filmId) == null) {
             throw new NotFoundException("Фильм не найден");
         }
     }
 
-    private void validateReviewAndUser(int reviewId, int userId) {
+    private void validateReview(int reviewId) {
         getReviewById(reviewId);
-        if (userStorage.getUserById(userId) == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
     }
 }
