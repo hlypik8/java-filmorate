@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Repository
@@ -21,9 +22,9 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     public Review addReview(Review review) {
 
         String query = """
-                INSERT INTO reviews (content, is_positive, user_id, film_id, useful)
-                VALUES (?,?,?,?,?);
-                """;
+            INSERT INTO reviews (content, is_positive, user_id, film_id, useful)
+            VALUES (?,?,?,?,?);
+            """;
 
         int id = insert(query,
                 review.getContent(),
@@ -34,21 +35,47 @@ public class ReviewDbStorage extends BaseStorage<Review> {
 
         review.setReviewId(id);
 
+        String addEventQuery = """
+            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(addEventQuery,
+                review.getUserId(),
+                LocalDateTime.now(),
+                "REVIEW",
+                "ADD",
+                review.getReviewId(),
+                "REVIEW"
+        );
+
         return review;
     }
 
     public Review updateReview(Review review) {
 
         String query = """
-                UPDATE reviews
-                SET content = ?, is_positive = ?
-                WHERE review_id = ?
-                """;
+            UPDATE reviews
+            SET content = ?, is_positive = ?
+            WHERE review_id = ?;
+            """;
 
         update(query,
                 review.getContent(),
                 review.getIsPositive(),
                 review.getReviewId());
+
+        String addEventQuery = """
+            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(addEventQuery,
+                review.getUserId(),
+                LocalDateTime.now(),
+                "REVIEW",
+                "UPDATE",
+                review.getReviewId(),
+                "REVIEW"
+        );
 
         return getReviewById(review.getReviewId());
     }
@@ -56,12 +83,26 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     public void deleteReview(int id) {
 
         String query = """
-                DELETE FROM reviews
-                WHERE review_id = ?;
-                """;
+            DELETE FROM reviews
+            WHERE review_id = ?;
+            """;
 
         delete(query, id);
+
+        String addEventQuery = """
+            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """;
+        jdbcTemplate.update(addEventQuery,
+                getReviewById(id).getUserId(),
+                LocalDateTime.now(),
+                "REVIEW",
+                "REMOVE",
+                id,
+                "REVIEW"
+        );
     }
+
 
     public Review getReviewById(int id) {
 
