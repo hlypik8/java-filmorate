@@ -18,6 +18,7 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendsDbStorage friendsStorage;
+    private final EventService eventService;
 
     public Collection<User> getUsersList() {
         log.info("Запрос списка всех пользователей");
@@ -54,6 +55,7 @@ public class UserService {
         friendsStorage.addFriend(userId, friendId);
 
         log.info("Пользователи {} и {} теперь друзья", userId, friendId);
+        eventService.createAddFriendEvent(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -66,6 +68,7 @@ public class UserService {
         friendsStorage.deleteFriend(userId, friendId);
 
         log.info("Пользователи {} и {} больше не друзья", userId, friendId);
+        eventService.createRemoveFriendEvent(userId, friendId);
     }
 
     public Collection<User> getUserFriends(int userId) {

@@ -7,7 +7,9 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId) {
@@ -65,6 +68,11 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public void delete(@PathVariable int userId) {
         userService.removeUser(userId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<Event> getFeed(@PathVariable int id) {
+        return eventService.getFeed(id);
     }
 
     @ExceptionHandler

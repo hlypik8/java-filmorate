@@ -26,6 +26,7 @@ public class FilmService {
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
     private final LikesDbStorage likesDbStorage;
+    private final EventService eventService;
 
     public Collection<Film> getFilmsList() {
         log.info("Запрос списка всех фильмов");
@@ -101,6 +102,8 @@ public class FilmService {
         likesDbStorage.addLike(userId, filmId);
 
         log.info("Лайк фильму {} от пользователя {} добавлен", filmId, userId);
+
+        eventService.createAddLikeEvent(userId, filmId);
     }
 
     public void deleteLike(int userId, int filmId) {
@@ -109,6 +112,8 @@ public class FilmService {
         likesDbStorage.removeLike(userId, filmId);
 
         log.info("Лайк фильму {} от пользователя {} удален", filmId, userId);
+
+        eventService.createRemoveLikeEvent(userId, filmId);
     }
 
     public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {

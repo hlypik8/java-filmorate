@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.ReviewRowMapper;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Repository
@@ -35,19 +34,6 @@ public class ReviewDbStorage extends BaseStorage<Review> {
 
         review.setReviewId(id);
 
-        String addEventQuery = """
-            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
-        jdbcTemplate.update(addEventQuery,
-                review.getUserId(),
-                LocalDateTime.now(),
-                "REVIEW",
-                "ADD",
-                review.getReviewId(),
-                "REVIEW"
-        );
-
         return review;
     }
 
@@ -64,19 +50,6 @@ public class ReviewDbStorage extends BaseStorage<Review> {
                 review.getIsPositive(),
                 review.getReviewId());
 
-        String addEventQuery = """
-            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
-        jdbcTemplate.update(addEventQuery,
-                review.getUserId(),
-                LocalDateTime.now(),
-                "REVIEW",
-                "UPDATE",
-                review.getReviewId(),
-                "REVIEW"
-        );
-
         return getReviewById(review.getReviewId());
     }
 
@@ -88,19 +61,6 @@ public class ReviewDbStorage extends BaseStorage<Review> {
             """;
 
         delete(query, id);
-
-        String addEventQuery = """
-            INSERT INTO user_feed (user_id, timestamp, event_type, operation, entity_id, entity_type)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
-        jdbcTemplate.update(addEventQuery,
-                getReviewById(id).getUserId(),
-                LocalDateTime.now(),
-                "REVIEW",
-                "REMOVE",
-                id,
-                "REVIEW"
-        );
     }
 
 
