@@ -1,15 +1,16 @@
 package ru.yandex.practicum.filmorate.storageTest;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.User;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.genreStorage.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.*;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
         FilmDbStorage.class, FilmRowMapper.class,
         MpaDbStorage.class, MpaRowMapper.class,
         GenreDbStorage.class, GenreRowMapper.class})
+@Transactional
 public class ReviewDbStorageTest {
 
     private final ReviewDbStorage reviewDbStorage;
@@ -38,13 +40,13 @@ public class ReviewDbStorageTest {
     private final FilmDbStorage filmDbStorage;
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     private User user;
     private Film film;
 
     @BeforeEach
     void setup() {
-        // Создаем пользователя
         user = new User();
         user.setEmail("user@example.com");
         user.setLogin("userlogin");
@@ -52,7 +54,6 @@ public class ReviewDbStorageTest {
         user.setBirthday(LocalDate.of(1990, 1, 1));
         user = userDbStorage.newUser(user);
 
-        // Создаем фильм
         film = new Film();
         film.setName("Test Film");
         film.setDescription("Description");
@@ -61,6 +62,21 @@ public class ReviewDbStorageTest {
         film.setMpa(mpaDbStorage.getMpaById(1));
         film.setGenres(Set.of(genreDbStorage.getGenreById(1)));
         film = filmDbStorage.newFilm(film);
+    }
+
+    @AfterEach
+    void tearDown() {
+        clearDatabase();
+    }
+
+    private void clearDatabase() {
+        jdbcTemplate.update("DELETE FROM review_ratings");
+        jdbcTemplate.update("DELETE FROM reviews");
+        jdbcTemplate.execute("ALTER TABLE reviews ALTER COLUMN review_id RESTART WITH 1");
+        jdbcTemplate.update("DELETE FROM films");
+        jdbcTemplate.execute("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
+        jdbcTemplate.update("DELETE FROM users");
+        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
     @Test

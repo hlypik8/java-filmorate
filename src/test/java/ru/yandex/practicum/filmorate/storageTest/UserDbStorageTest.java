@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storageTest;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
@@ -22,32 +24,32 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({UserDbStorage.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Rollback(false)
+@Transactional
 public class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     private User user;
 
     @BeforeEach
-    void clearAndSetup() {
-        // Сначала чистим дочерние таблицы
-        jdbcTemplate.update("DELETE FROM friends");
-        jdbcTemplate.update("DELETE FROM likes");
-        // Затем самих пользователей
-        jdbcTemplate.update("DELETE FROM users");
-        // Сбрасываем IDENTITY
-        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
-
-        // Инициализируем «эталонного» пользователя
+    void setup() {
         user = new User();
         user.setEmail("user@example.com");
         user.setLogin("userLogin");
         user.setName("User Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
+    }
+
+    @AfterEach
+    void tearDown() {
+        clearDatabase();
+    }
+
+    private void clearDatabase() {
+        jdbcTemplate.update("DELETE FROM friends");
+        jdbcTemplate.update("DELETE FROM users");
+        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
     @Test
