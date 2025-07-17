@@ -50,17 +50,17 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> getDirectorsFilmsByLikes(int directorId) {
 
         String query = """
-            SELECT f.*
-            FROM films f
-            JOIN films_directors fd ON f.id = fd.film_id
-            LEFT JOIN (
-                SELECT film_id, COUNT(*) AS like_count
-                FROM likes
-                GROUP BY film_id
-            ) l ON f.id = l.film_id
-            WHERE fd.director_id = ?
-            ORDER BY COALESCE(l.like_count, 0) DESC;
-            """;
+                SELECT f.*
+                FROM films f
+                JOIN films_directors fd ON f.id = fd.film_id
+                LEFT JOIN (
+                    SELECT film_id, COUNT(*) AS like_count
+                    FROM likes
+                    GROUP BY film_id
+                ) l ON f.id = l.film_id
+                WHERE fd.director_id = ?
+                ORDER BY COALESCE(l.like_count, 0) DESC;
+                """;
 
         return findMany(query, filmRowMapper, directorId);
     }
@@ -68,17 +68,17 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> getDirectorsFilmsByYear(int directorId) {
 
         String query = """
-            SELECT f.*
-            FROM films f
-            JOIN films_directors fd ON f.id = fd.film_id
-            LEFT JOIN (
-                SELECT film_id, COUNT(*) AS like_count
-                FROM likes
-                GROUP BY film_id
-            ) l ON f.id = l.film_id
-            WHERE fd.director_id = ?
-            ORDER BY f.release_date ASC;
-            """;
+                SELECT f.*
+                FROM films f
+                JOIN films_directors fd ON f.id = fd.film_id
+                LEFT JOIN (
+                    SELECT film_id, COUNT(*) AS like_count
+                    FROM likes
+                    GROUP BY film_id
+                ) l ON f.id = l.film_id
+                WHERE fd.director_id = ?
+                ORDER BY f.release_date ASC;
+                """;
 
         return findMany(query, filmRowMapper, directorId);
     }
@@ -87,15 +87,15 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> searchFilmsByDirector(String searchQuery) {
 
         String query = """
-            SELECT f.*
-            FROM directors d
-            JOIN films_directors fd ON d.id = fd.director_id
-            JOIN films f ON fd.film_id = f.id
-            LEFT JOIN likes l ON f.id = l.film_id
-            WHERE d.name ILIKE ?
-            GROUP BY f.id
-            ORDER BY COUNT(l.id) DESC;
-            """;
+                SELECT f.*
+                FROM directors d
+                JOIN films_directors fd ON d.id = fd.director_id
+                JOIN films f ON fd.film_id = f.id
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE d.name ILIKE ?
+                GROUP BY f.id
+                ORDER BY COUNT(l.id) DESC;
+                """;
 
         return findMany(query, filmRowMapper, "%" + searchQuery + "%");
     }
@@ -104,13 +104,13 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> searchFilmsByTitle(String searchQuery) {
 
         String query = """
-            SELECT f.*
-            FROM films f
-            LEFT JOIN likes l ON f.id = l.film_id
-            WHERE f.name ILIKE ?
-            GROUP BY f.id
-            ORDER BY COUNT(l.id) DESC
-            """;
+                SELECT f.*
+                FROM films f
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE f.name ILIKE ?
+                GROUP BY f.id
+                ORDER BY COUNT(l.id) DESC
+                """;
 
         return findMany(query, filmRowMapper, "%" + searchQuery + "%");
     }
@@ -119,15 +119,15 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> searchFilmsByDirectorAndTitle(String searchQuery) {
 
         String query = """
-            SELECT f.*
-            FROM films f
-            LEFT JOIN likes l ON f.id = l.film_id
-            LEFT JOIN films_directors fd ON f.id = fd.film_id
-            LEFT JOIN directors d ON fd.director_id = d.id
-            WHERE f.name ILIKE ? OR d.name ILIKE ?
-            GROUP BY f.id
-            ORDER BY COUNT(l.id) DESC
-            """;
+                SELECT f.*
+                FROM films f
+                LEFT JOIN likes l ON f.id = l.film_id
+                LEFT JOIN films_directors fd ON f.id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.id
+                WHERE f.name ILIKE ? OR d.name ILIKE ?
+                GROUP BY f.id
+                ORDER BY COUNT(l.id) DESC
+                """;
 
         return findMany(query, filmRowMapper, "%" + searchQuery + "%", "%" + searchQuery + "%");
     }
@@ -185,7 +185,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 WHERE film_id = ?;
                 """;
 
-        update(query, film.getId());
+        jdbcTemplate.update(query, film.getId());
 
         saveGenres(film);
     }

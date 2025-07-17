@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friendsStorage.FriendsDbStorage;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendsDbStorage friendsStorage;
+    private final EventService eventService;
 
     public Collection<User> getUsersList() {
         log.info("Запрос списка всех пользователей");
@@ -54,6 +56,7 @@ public class UserService {
         friendsStorage.addFriend(userId, friendId);
 
         log.info("Пользователи {} и {} теперь друзья", userId, friendId);
+        eventService.createAddFriendEvent(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -66,6 +69,7 @@ public class UserService {
         friendsStorage.deleteFriend(userId, friendId);
 
         log.info("Пользователи {} и {} больше не друзья", userId, friendId);
+        eventService.createRemoveFriendEvent(userId, friendId);
     }
 
     public Collection<User> getUserFriends(int userId) {
@@ -97,4 +101,10 @@ public class UserService {
         return userStorage.getUserById(userId) != null;
     }
 
+    public Collection<Event> getFeed(int userId) {
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        return eventService.getFeed(userId);
+    }
 }

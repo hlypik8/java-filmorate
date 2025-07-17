@@ -21,9 +21,9 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     public Review addReview(Review review) {
 
         String query = """
-                INSERT INTO reviews (content, is_positive, user_id, film_id, useful)
-                VALUES (?,?,?,?,?);
-                """;
+            INSERT INTO reviews (content, is_positive, user_id, film_id, useful)
+            VALUES (?,?,?,?,?);
+            """;
 
         int id = insert(query,
                 review.getContent(),
@@ -40,10 +40,10 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     public Review updateReview(Review review) {
 
         String query = """
-                UPDATE reviews
-                SET content = ?, is_positive = ?
-                WHERE review_id = ?
-                """;
+            UPDATE reviews
+            SET content = ?, is_positive = ?
+            WHERE review_id = ?;
+            """;
 
         update(query,
                 review.getContent(),
@@ -56,12 +56,13 @@ public class ReviewDbStorage extends BaseStorage<Review> {
     public void deleteReview(int id) {
 
         String query = """
-                DELETE FROM reviews
-                WHERE review_id = ?;
-                """;
+            DELETE FROM reviews
+            WHERE review_id = ?;
+            """;
 
         delete(query, id);
     }
+
 
     public Review getReviewById(int id) {
 

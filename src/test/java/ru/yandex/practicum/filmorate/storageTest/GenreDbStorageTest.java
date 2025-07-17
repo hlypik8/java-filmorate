@@ -37,8 +37,7 @@ class GenreDbStorageTest {
         assertFalse(genres.isEmpty());
     }
 
-    @Test
-    void testGetByFilmId() {
+    @Test    void testGetByFilmId() {
         Collection<Genre> genres = storage.getGenresByFilmId(1);
         assertNotNull(genres);
     }

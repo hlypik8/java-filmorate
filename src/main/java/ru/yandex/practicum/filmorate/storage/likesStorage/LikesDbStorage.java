@@ -15,25 +15,24 @@ public class LikesDbStorage extends BaseStorage<Integer> {
     }
 
     public void addLike(int userId, int filmId) {
-
         String query = """
                 INSERT INTO likes (user_id, film_id)
                 VALUES (?, ?);
                 """;
-
         insert(query, userId, filmId);
     }
+
 
     public void removeLike(int userId, int filmId) {
 
         String query = """
-                DELETE FROM likes
-                WHERE user_id = ?
-                      AND film_id = ?;
-                """;
-
-        delete(query, userId, filmId);
+            DELETE FROM likes
+            WHERE user_id = ?
+                  AND film_id = ?;
+            """;
+        update(query, userId, filmId);
     }
+
 
     public Collection<Integer> getLikesByUser(int userId) {
         String query = """
