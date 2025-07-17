@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friendsStorage.FriendsDbStorage;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
@@ -100,4 +101,10 @@ public class UserService {
         return userStorage.getUserById(userId) != null;
     }
 
+    public Collection<Event> getFeed(int userId) {
+        if (!userExists(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        return eventService.getFeed(userId);
+    }
 }

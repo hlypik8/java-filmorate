@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.InvalidRequestFormat;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.directorStorage.DirectorDbStorage;
 
@@ -27,11 +28,13 @@ public class DirectorService {
 
     public Director newDirector(Director director) {
         log.info("Добавление нового режиссера");
+        validateDirector(director);
         return directorStorage.newDirector(director);
     }
 
     public Director updateDirector(Director director) {
         log.info("Обновление режиссера с id {}", director.getId());
+        validateDirector(director);
         return directorStorage.updateDirector(director);
     }
 
@@ -39,6 +42,12 @@ public class DirectorService {
         log.info("Удаление режиссера с id {}", id);
         directorStorage.deleteDirector(id);
         log.info("Удаление режиссера с id {} прошло успешно", id);
+    }
+
+    private void validateDirector(Director director) {
+        if (director.getName().isBlank() || director.getName().isEmpty()) {
+            throw new InvalidRequestFormat("Режиссер не может быть без имени");
+        }
     }
 
 }

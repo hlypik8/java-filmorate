@@ -72,7 +72,7 @@ public class UserController {
 
     @GetMapping("/{id}/feed")
     public Collection<Event> getFeed(@PathVariable int id) {
-        return eventService.getFeed(id);
+        return userService.getFeed(id);
     }
 
     @ExceptionHandler

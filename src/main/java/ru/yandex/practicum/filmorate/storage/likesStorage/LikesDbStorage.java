@@ -30,7 +30,7 @@ public class LikesDbStorage extends BaseStorage<Integer> {
             WHERE user_id = ?
                   AND film_id = ?;
             """;
-        delete(query, userId, filmId);
+        update(query, userId, filmId);
     }
 
 

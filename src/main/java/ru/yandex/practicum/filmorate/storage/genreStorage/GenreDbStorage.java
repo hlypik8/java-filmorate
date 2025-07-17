@@ -46,7 +46,7 @@ public class GenreDbStorage extends BaseStorage<Genre> {
                 FROM films_genres fg
                 JOIN genres g ON fg.genre_id = g.id
                 WHERE fg.film_id = ?
-                ORDER BY fg.id DESC;
+                ORDER BY fg.genre_id;
                 """;
 
         return findMany(query, genreRowMapper, filmId);

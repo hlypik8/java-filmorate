@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidRequestFormat;
 import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.directorStorage.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genreStorage.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.likesStorage.LikesDbStorage;
@@ -26,6 +28,7 @@ public class FilmService {
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
     private final LikesDbStorage likesDbStorage;
+    private final DirectorDbStorage directorDbStorage;
     private final EventService eventService;
 
     public Collection<Film> getFilmsList() {
@@ -36,9 +39,11 @@ public class FilmService {
     public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
         log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
         if (sortBy.equals("likes")) {
+            validateDirector(directorId);
             return filmStorage.getDirectorsFilmsByLikes(directorId);
         }
         if (sortBy.equals("year")) {
+            validateDirector(directorId);
             return filmStorage.getDirectorsFilmsByYear(directorId);
         }
 
@@ -58,7 +63,8 @@ public class FilmService {
 
         log.debug("Валидация mpa и жанров пройдена");
         log.info("Новый фильм успешно добавлен {}", film.getName());
-        return filmStorage.newFilm(film);
+        filmStorage.newFilm(film);
+        return getFilmById(film.getId());
     }
 
     public Film updateFilm(Film film) {
@@ -69,7 +75,8 @@ public class FilmService {
         log.debug("Валидация mpa и жанров пройдена");
 
         log.info("Фильм успешно обновлен {}", film);
-        return filmStorage.updateFilm(film);
+        filmStorage.updateFilm(film);
+        return getFilmById(film.getId());
     }
 
     public void removeFilm(int filmId) {
@@ -139,6 +146,12 @@ public class FilmService {
             return filmStorage.searchFilmsByDirectorAndTitle(query);
         }
         throw new InvalidRequestFormat("Поддерживаются только значения 'title' и 'director'");
+    }
+
+    private void validateDirector(int directorId) {
+        if (directorDbStorage.getDirectorById(directorId) == null) {
+            throw new NotFoundException("Такой режиссер не найден");
+        }
     }
 
 }
