@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.storageTest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +21,8 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
+@AutoConfigureTestDatabase()
 @Import({UserDbStorage.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
@@ -46,6 +48,7 @@ public class UserDbStorageTest {
     }
 
     private void clearDatabase() {
+        jdbcTemplate.update("DELETE FROM likes");
         jdbcTemplate.update("DELETE FROM friends");
         jdbcTemplate.update("DELETE FROM users");
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
@@ -62,14 +65,29 @@ public class UserDbStorageTest {
 
     @Test
     void testUpdateUser() {
-        User created = userStorage.newUser(user);
+        // Создаём нового пользователя
+        User newUser = new User();
+        newUser.setEmail("user@example.com");
+        newUser.setLogin("userLogin");
+        newUser.setName("User Name");
+        newUser.setBirthday(LocalDate.of(1990, 1, 1));
+
+        // Сохраняем в БД
+        User created = userStorage.newUser(newUser);
+
+        // Обновляем данные
         created.setName("Updated Name");
         created.setLogin("updatedLogin");
 
+        // Обновляем пользователя в БД
         User updated = userStorage.updateUser(created);
+
+        // Проверяем, что обновление прошло корректно
         assertEquals("Updated Name", updated.getName());
         assertEquals("updatedLogin", updated.getLogin());
     }
+
+
 
     @Test
     void testGetAllUsers() {
