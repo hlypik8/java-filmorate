@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.filmStorage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
@@ -246,7 +248,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
-    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+    public Collection<Film> getPopularFilms(Integer genreId, Integer year) {
 
         String query = """
                  SELECT f.*,
@@ -264,10 +266,9 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 f.duration,
                 f.mpa_rating_id
                 ORDER BY likes_count DESC
-                LIMIT ?;
                 """;
 
-        return findMany(query, filmRowMapper, genreId, genreId, year, year, count);
+        return findMany(query, filmRowMapper, genreId, genreId, year, year);
     }
 
     public Collection<Film> getCommonFilms(int userId, int friendId) {
