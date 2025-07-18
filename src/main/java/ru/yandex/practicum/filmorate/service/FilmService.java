@@ -39,12 +39,10 @@ public class FilmService {
 
     public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
         log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
-        if (sortBy.equals(EventType.LIKE.name())) {
-            validateDirector(directorId);
+        if (sortBy.equals("likes")) {
             return filmStorage.getDirectorsFilmsByLikes(directorId);
         }
         if (sortBy.equals("year")) {
-            validateDirector(directorId);
             return filmStorage.getDirectorsFilmsByYear(directorId);
         }
 
@@ -147,11 +145,5 @@ public class FilmService {
             return filmStorage.searchFilmsByDirectorAndTitle(query);
         }
         throw new InvalidRequestFormat("Поддерживаются только значения 'title' и 'director'");
-    }
-
-    private void validateDirector(int directorId) {
-        if (directorDbStorage.exists(directorId)) {
-            throw new NotFoundException("Такой режиссер не найден");
-        }
     }
 }
