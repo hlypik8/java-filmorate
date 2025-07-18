@@ -1,12 +1,15 @@
 package ru.yandex.practicum.filmorate.storageTest;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
@@ -23,7 +26,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
+@SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class,
@@ -32,11 +35,13 @@ import static org.junit.jupiter.api.Assertions.*;
         LikesDbStorage.class,
         UserDbStorage.class, UserRowMapper.class,
         FriendsDbStorage.class})
+@Transactional
 public class FilmDbStorageTests {
 
     private final FilmDbStorage filmDbStorage;
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
+    private final JdbcTemplate jdbcTemplate;
 
     private Film film;
 
@@ -49,6 +54,18 @@ public class FilmDbStorageTests {
         film.setDuration(120);
         film.setMpa(mpaDbStorage.getMpaById(1));
         film.setGenres(Set.of(genreDbStorage.getGenreById(1)));
+    }
+
+    @AfterEach
+    void tearDown() {
+        clearDatabase();
+    }
+
+    private void clearDatabase() {
+        jdbcTemplate.update("DELETE FROM films_genres");
+        jdbcTemplate.update("DELETE FROM likes");
+        jdbcTemplate.update("DELETE FROM films");
+        jdbcTemplate.execute("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
     }
 
     @Test

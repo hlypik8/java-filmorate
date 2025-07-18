@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -30,6 +31,11 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getDirectorFilmsSorted(@PathVariable int directorId, @RequestParam String sortBy) {
+        return filmService.getFilmByDirector(directorId, sortBy);
+    }
+
     @PostMapping
     public Film post(@Valid @RequestBody Film film) {
         return filmService.newFilm(film);
@@ -39,7 +45,6 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film film) {
         return filmService.updateFilm(film);
     }
-
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
@@ -51,9 +56,27 @@ public class FilmController {
         filmService.deleteLike(userId, id);
     }
 
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable int filmId) {
+        filmService.removeFilm(filmId);
+    }
+
     @GetMapping("/popular")
-    public Collection<Film> getPopular(@RequestParam(defaultValue = "10", name = "count") int count) {
-        return filmService.getPopularFilms(count);
+    public Collection<Film> getPopular(@RequestParam(defaultValue = "10", name = "count") int count,
+                                       @RequestParam(required = false, name = "genreId") Integer genreId,
+                                       @RequestParam(required = false, name = "year") Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
+                                           @RequestParam(name = "friendId") int friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> search(@RequestParam String query, @RequestParam List<String> by) {
+        return filmService.searchFilms(query, by);
     }
 
     @ExceptionHandler

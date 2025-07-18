@@ -1,14 +1,15 @@
 package ru.yandex.practicum.filmorate.storageTest;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
@@ -18,36 +19,37 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@JdbcTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
+@AutoConfigureTestDatabase()
 @Import({UserDbStorage.class, UserRowMapper.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Rollback(false)
+@Transactional
 public class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     private User user;
 
     @BeforeEach
-    void clearAndSetup() {
-        // Сначала чистим дочерние таблицы
-        jdbcTemplate.update("DELETE FROM friends");
-        jdbcTemplate.update("DELETE FROM likes");
-        // Затем самих пользователей
-        jdbcTemplate.update("DELETE FROM users");
-        // Сбрасываем IDENTITY
-        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
-
-        // Инициализируем «эталонного» пользователя
+    void setup() {
         user = new User();
         user.setEmail("user@example.com");
         user.setLogin("userLogin");
         user.setName("User Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
+    }
+
+    @AfterEach
+    void tearDown() {
+        clearDatabase();
+    }
+
+    private void clearDatabase() {
+        jdbcTemplate.update("DELETE FROM likes");
+        jdbcTemplate.update("DELETE FROM friends");
+        jdbcTemplate.update("DELETE FROM users");
+        jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
     }
 
     @Test
@@ -61,14 +63,29 @@ public class UserDbStorageTest {
 
     @Test
     void testUpdateUser() {
-        User created = userStorage.newUser(user);
+        // Создаём нового пользователя
+        User newUser = new User();
+        newUser.setEmail("user@example.com");
+        newUser.setLogin("userLogin");
+        newUser.setName("User Name");
+        newUser.setBirthday(LocalDate.of(1990, 1, 1));
+
+        // Сохраняем в БД
+        User created = userStorage.newUser(newUser);
+
+        // Обновляем данные
         created.setName("Updated Name");
         created.setLogin("updatedLogin");
 
+        // Обновляем пользователя в БД
         User updated = userStorage.updateUser(created);
+
+        // Проверяем, что обновление прошло корректно
         assertEquals("Updated Name", updated.getName());
         assertEquals("updatedLogin", updated.getLogin());
     }
+
+
 
     @Test
     void testGetAllUsers() {

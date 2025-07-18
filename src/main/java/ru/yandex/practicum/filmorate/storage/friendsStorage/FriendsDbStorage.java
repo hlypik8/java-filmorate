@@ -48,18 +48,16 @@ public class FriendsDbStorage extends BaseStorage<Integer> {
                 WHERE user_id = ?
                       AND friend_id = ?;
                 """;
-
         delete(deleteSql, userId, friendId);
 
         String updateReverse = """
                 UPDATE friends
                 SET accepted = false
-                WHERE user_id = ?
-                      AND friend_id = ?;
+                WHERE user_id = ? AND friend_id = ?;
                 """;
-
         jdbcTemplate.update(updateReverse, friendId, userId);
     }
+
 
     public Collection<Integer> getFriendIds(int userId) {
 
