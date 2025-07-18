@@ -28,7 +28,7 @@ public class DirectorService {
 
     public Director newDirector(Director director) {
         log.info("Добавление нового режиссера");
-        if (director.getName().isBlank()) {
+        if (director == null || director.getName().isBlank()) {
             throw new InvalidRequestFormat("Некорректное имя режиссера");
         }
         return directorStorage.newDirector(director);
