@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.InvalidRequestFormat;
 import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -38,10 +39,18 @@ public class FilmService {
     public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
         log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
         if (sortBy.equals("likes")) {
-            return filmStorage.getDirectorsFilmsByLikes(directorId);
+            Collection<Film> films = filmStorage.getDirectorsFilmsByLikes(directorId);
+            if (films.isEmpty()) {
+                throw new NotFoundException("Фильмы режиссера не найдены");
+            }
+            return films;
         }
         if (sortBy.equals("year")) {
-            return filmStorage.getDirectorsFilmsByYear(directorId);
+            Collection<Film> films = filmStorage.getDirectorsFilmsByYear(directorId);
+            if (films.isEmpty()) {
+                throw new NotFoundException("Фильмы режиссера не найдены");
+            }
+            return films;
         }
 
         return Collections.emptyList();
