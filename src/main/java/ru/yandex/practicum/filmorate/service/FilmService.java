@@ -120,8 +120,10 @@ public class FilmService {
         eventService.createRemoveLikeEvent(userId, filmId);
     }
 
-    public Collection<Film> getPopularFilms(Integer genreId, Integer year) {
-        return filmStorage.getPopularFilms(genreId, year).stream().toList();
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
+        log.info("Запрос {} популярных фильмов", count);
+
+        return filmStorage.getPopularFilms(count, genreId, year).stream().toList();
     }
 
     public Collection<Film> getCommonFilms(int userId, int friendId) {

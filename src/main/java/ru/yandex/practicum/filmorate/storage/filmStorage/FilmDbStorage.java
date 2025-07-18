@@ -248,8 +248,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return film;
     }
 
-    public Collection<Film> getPopularFilms(Integer genreId, Integer year) {
-
+    public Collection<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         String query = """
                  SELECT f.*,
                         COUNT(l.user_id) AS likes_count
@@ -266,9 +265,10 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 f.duration,
                 f.mpa_rating_id
                 ORDER BY likes_count DESC
+                LIMIT ?;
                 """;
 
-        return findMany(query, filmRowMapper, genreId, genreId, year, year);
+        return findMany(query, filmRowMapper, genreId, genreId, year, year, count);
     }
 
     public Collection<Film> getCommonFilms(int userId, int friendId) {
