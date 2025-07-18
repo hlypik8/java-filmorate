@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friendsStorage.FriendsDbStorage;
-import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserDbStorage userStorage;
     private final FriendsDbStorage friendsStorage;
     private final EventService eventService;
 
@@ -48,10 +48,8 @@ public class UserService {
 
     public void addFriend(int userId, int friendId) {
         log.info("Добавление дружбы между {} и {}", userId, friendId);
-
-        if (!userExists(userId) || !userExists(friendId)) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+        validateUser(userId);
+        validateUser(friendId);
 
         friendsStorage.addFriend(userId, friendId);
 
@@ -61,10 +59,8 @@ public class UserService {
 
     public void deleteFriend(int userId, int friendId) {
         log.info("Удаление дружбы между пользователями {} и {}", userId, friendId);
-
-        if (!userExists(userId) || !userExists(friendId)) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+        validateUser(userId);
+        validateUser(friendId);
 
         friendsStorage.deleteFriend(userId, friendId);
 
@@ -74,10 +70,8 @@ public class UserService {
 
     public Collection<User> getUserFriends(int userId) {
         log.info("Запрос на получение друзей пользователя с id {}", userId);
-        if (!userExists(userId)) {
-            log.warn("Пользователь c id {} не найден", userId);
-            throw new NotFoundException("Пользователь не найден");
-        }
+        validateUser(userId);
+
         return friendsStorage.getFriendIds(userId).stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
@@ -85,26 +79,21 @@ public class UserService {
 
     public Collection<User> getCommonFriends(int userId, int otherId) {
         log.info("Запрос на получение общих друзей пользователя {} и {}", userId, otherId);
+        validateUser(userId);
+        validateUser(otherId);
 
-        if (!userExists(userId) || !userExists(otherId)) {
-            log.warn("Пользователь c id {} не найден", userId);
-            throw new NotFoundException("Пользователь с id " + userId + " не найден");
-        }
-        if (!userExists(otherId)) {
-            log.warn("Пользователь c id {} не найден", otherId);
-            throw new NotFoundException("Пользователь с id " + otherId + " не найден");
-        }
         return userStorage.getCommonFriends(userId, otherId);
     }
 
-    private boolean userExists(int userId) {
-        return userStorage.getUserById(userId) != null;
+    private void validateUser(int userId) {
+        if (!userStorage.exists(userId)) {
+            log.warn("Пользователь c id {} не найден", userId);
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
     }
 
     public Collection<Event> getFeed(int userId) {
-        if (!userExists(userId)) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+        validateUser(userId);
         return eventService.getFeed(userId);
     }
 }

@@ -22,33 +22,40 @@ public class RecommendationService {
 
         Collection<Integer> likedFilms = likesDbStorage.getLikesByUser(userId);
         log.info("Лайки пользователя {}: {}", userId, likedFilms);
-
         Set<Integer> likedFilmSet = new HashSet<>(likedFilms);
+
+        if (likedFilmSet.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> usersWhoLikedFilms = likesDbStorage.getUsersWhoLikedFilms(likedFilmSet);
+        usersWhoLikedFilms.removeIf(id -> id == userId);
+
+        if (usersWhoLikedFilms.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Integer, List<Integer>> likesOfOtherUsers = likesDbStorage.getLikesByUsers(usersWhoLikedFilms);
 
         Map<Integer, Map<Integer, Double>> diff = new HashMap<>();
         Map<Integer, Map<Integer, Integer>> freq = new HashMap<>();
 
-        likedFilmSet.forEach(filmId -> {
-            List<Integer> usersWhoLikedFilm = likesDbStorage.getUsersWhoLikedFilm(filmId)
-                    .stream()
-                    .toList();
-            log.info("Пользователи, которые поставили лайк фильму {}: {}", filmId, usersWhoLikedFilm);
+        for (Integer filmId : likedFilmSet) {
+            for (Map.Entry<Integer, List<Integer>> entry : likesOfOtherUsers.entrySet()) {
+                List<Integer> otherUserLikes = entry.getValue();
 
-            usersWhoLikedFilm.stream()
-                    .filter(userWhoLiked -> userWhoLiked != userId)
-                    .forEach(userWhoLiked -> {
-                        Collection<Integer> otherUserLikes = likesDbStorage.getLikesByUser(userWhoLiked);
-                        otherUserLikes.stream()
-                                .filter(otherFilmId -> !likedFilmSet.contains(otherFilmId))
-                                .forEach(otherFilmId -> {
-                                    double observedDiff = 1;
-                                    diff.computeIfAbsent(filmId, k -> new HashMap<>())
-                                            .merge(otherFilmId, observedDiff, Double::sum);
-                                    freq.computeIfAbsent(filmId, k -> new HashMap<>())
-                                            .merge(otherFilmId, 1, Integer::sum);
-                                });
-                    });
-        });
+                if (otherUserLikes.contains(filmId)) {
+                    for (Integer otherFilmId : otherUserLikes) {
+                        if (!likedFilmSet.contains(otherFilmId)) {
+                            diff.computeIfAbsent(filmId, k -> new HashMap<>())
+                                    .merge(otherFilmId, 1.0, Double::sum);
+                            freq.computeIfAbsent(filmId, k -> new HashMap<>())
+                                    .merge(otherFilmId, 1, Integer::sum);
+                        }
+                    }
+                }
+            }
+        }
 
         List<Film> recommendedFilms = diff.entrySet().stream()
                 .flatMap(entry -> entry.getValue().entrySet().stream()
@@ -70,6 +77,7 @@ public class RecommendationService {
         log.info("Рекомендованные фильмы для пользователя {}: {}", userId, recommendedFilms);
         return recommendedFilms;
     }
+
 }
 
 

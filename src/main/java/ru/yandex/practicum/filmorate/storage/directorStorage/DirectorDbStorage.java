@@ -95,4 +95,8 @@ public class DirectorDbStorage extends BaseStorage<Director> {
 
         delete(query, id);
     }
+
+    public boolean exists(int directorId) {
+        return getDirectorById(directorId) != null;
+    }
 }

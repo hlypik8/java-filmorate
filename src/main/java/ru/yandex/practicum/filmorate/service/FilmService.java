@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.eventEnums.EventType;
 import ru.yandex.practicum.filmorate.storage.directorStorage.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genreStorage.GenreDbStorage;
@@ -38,7 +39,7 @@ public class FilmService {
 
     public Collection<Film> getFilmByDirector(int directorId, String sortBy) {
         log.info("Получение фильмов режиссера с id {} по кол-ву лайков", directorId);
-        if (sortBy.equals("likes")) {
+        if (sortBy.equals(EventType.LIKE.name())) {
             validateDirector(directorId);
             return filmStorage.getDirectorsFilmsByLikes(directorId);
         }
@@ -47,7 +48,7 @@ public class FilmService {
             return filmStorage.getDirectorsFilmsByYear(directorId);
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     public Film getFilmById(int filmId) {
@@ -149,11 +150,8 @@ public class FilmService {
     }
 
     private void validateDirector(int directorId) {
-        if (directorDbStorage.getDirectorById(directorId) == null) {
+        if (directorDbStorage.exists(directorId)) {
             throw new NotFoundException("Такой режиссер не найден");
         }
     }
-
 }
-
-

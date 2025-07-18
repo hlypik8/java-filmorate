@@ -115,4 +115,7 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
         return findMany(query, userRowMapper, userId, otherId);
     }
 
+    public boolean exists(int userId) {
+        return getUserById(userId) != null;
+    }
 }

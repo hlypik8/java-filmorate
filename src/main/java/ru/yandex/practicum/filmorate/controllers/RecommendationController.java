@@ -25,9 +25,7 @@ public class RecommendationController {
     public Collection<Film> getRecommendations(@PathVariable("id") int userId) {
         log.info("Запрос на рекомендации для пользователя с ID: {}", userId);
         Collection<Film> recommendations = recommendationService.getRecommendations(userId);
-        if (recommendations.isEmpty()) {
-            log.info("Нет рекомендаций для пользователя с ID: {}", userId);
-        }
+        log.info("Получено {} рекомендаций", recommendations.size());
         return recommendations;
     }
 }

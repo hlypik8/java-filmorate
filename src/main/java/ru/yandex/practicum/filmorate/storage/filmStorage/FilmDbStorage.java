@@ -9,7 +9,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
@@ -167,16 +170,24 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     }
 
     private void saveDirectors(Film film) {
+        if (film.getDirectors().isEmpty()) return;
 
-        String query = """
-                INSERT INTO films_directors (film_id, director_id)
-                VALUES (?, ?)
-                """;
+        StringBuilder sql = new StringBuilder("INSERT INTO films_directors (film_id, director_id) VALUES ");
 
+        String placeholders = film.getDirectors().stream()
+                .map(d -> "(?, ?)")
+                .collect(Collectors.joining(", "));
+        sql.append(placeholders);
+
+        List<Object> params = new ArrayList<>();
         for (Director director : film.getDirectors()) {
-            jdbcTemplate.update(query, film.getId(), director.getId());
+            params.add(film.getId());
+            params.add(director.getId());
         }
+
+        jdbcTemplate.update(sql.toString(), params.toArray());
     }
+
 
     private void updateGenres(Film film) {
 
@@ -283,5 +294,9 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 """;
 
         return findMany(query, filmRowMapper, userId, friendId);
+    }
+
+    public boolean exists(int filmId) {
+        return getFilmById(filmId) != null;
     }
 }

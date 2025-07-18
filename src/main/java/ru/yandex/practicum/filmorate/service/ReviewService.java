@@ -1,23 +1,25 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.eventEnums.Operation;
-import ru.yandex.practicum.filmorate.storage.filmStorage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.filmStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.reviewStorage.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.storage.userStorage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.userStorage.UserDbStorage;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewDbStorage reviewStorage;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
+    private final UserDbStorage userStorage;
+    private final FilmDbStorage filmStorage;
     private final EventService eventService;
 
     public Review addReview(Review review) {
@@ -50,7 +52,6 @@ public class ReviewService {
 
     public List<Review> getReviews(Integer filmId, int count) {
         if (filmId != null) {
-            filmStorage.getFilmById(filmId);
             return reviewStorage.getReviewsByFilmId(filmId, count).stream().toList();
         }
         return reviewStorage.getAllReviews(count).stream().toList();
@@ -81,19 +82,23 @@ public class ReviewService {
     }
 
     private void validateUser(int userId) {
-        if (userStorage.getUserById(userId) == null) {
+        if (!userStorage.exists(userId)) {
+            log.warn("Пользователь c id {} не найден", userId);
             throw new NotFoundException("Пользователь не найден");
         }
-
     }
 
     private void validateFilm(int filmId) {
-        if (filmStorage.getFilmById(filmId) == null) {
+        if (!filmStorage.exists(filmId)) {
+            log.warn("Фильм c id {} не найден", filmId);
             throw new NotFoundException("Фильм не найден");
         }
     }
 
     private void validateReview(int reviewId) {
-        getReviewById(reviewId);
+        if (!reviewStorage.exists(reviewId)) {
+            log.warn("Отзыв c id {} не найден", reviewId);
+            throw new ReviewNotFoundException("Отзыв не найден");
+        }
     }
 }

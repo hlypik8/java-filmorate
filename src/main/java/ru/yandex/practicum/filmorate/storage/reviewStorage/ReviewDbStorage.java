@@ -131,4 +131,8 @@ public class ReviewDbStorage extends BaseStorage<Review> {
                 """;
         update(query, reviewId, reviewId);
     }
+
+    public boolean exists(int reviewId) {
+        return getReviewById(reviewId) != null;
+    }
 }
